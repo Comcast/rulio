@@ -1,0 +1,7 @@
+*~
+/logs/
+/tmp/
+*.log
+*.db
+TAGS
+*.prof

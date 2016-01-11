@@ -1,0 +1,285 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "definitions": {
+    "location": {
+      "description": "Location(s) to search for the object",
+      "type": "object",
+      "properties": {
+        "location": {
+          "description": "Location to search for the object",
+          "type": "string"
+        },
+        "locations": {
+          "description": "Locations to search for the object",
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        }
+      }
+    },
+    "libraries": {
+      "description": "Javascript libraries to use with the code",
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "patternQuery": {
+      "description": "Pattern to be matched",
+      "type": "object",
+      "allOf": [
+        {
+          "properties": {
+            "pattern": {
+              "description": "Pattern to be matched",
+              "type": "object"
+            }
+          },
+          "required": [
+            "pattern"
+          ]
+        },
+        {
+          "$ref": "#/definitions/location"
+        }
+      ]
+    },
+    "codeQuery": {
+      "description": "Code to be executed",
+      "type": "object",
+      "allOf": [
+        {
+          "properties": {
+            "code": {
+              "description": "Javascript code block",
+              "type": "string"
+            },
+            "libraries": {
+              "$ref": "#/definitions/libraries"
+            }
+          },
+          "required": [
+            "code"
+          ]
+        },
+        {
+          "$ref": "#/definitions/location"
+        }
+      ]
+    },
+    "notQuery": {
+      "description": "Not operation",
+      "type": "object",
+      "properties": {
+        "not": {
+          "description": "Query block",
+          "oneOf": [
+            {
+              "$ref": "#/definitions/patternQuery"
+            },
+            {
+              "$ref": "#/definitions/codeQuery"
+            },
+            {
+              "$ref": "#/definitions/notQuery"
+            },
+            {
+              "$ref": "#/definitions/andQuery"
+            },
+            {
+              "$ref": "#/definitions/orQuery"
+            }
+          ]
+        }
+      },
+      "required": [
+        "not"
+      ]
+    },
+    "andQuery": {
+      "description": "And operation",
+      "type": "object",
+      "properties": {
+        "and": {
+          "description": "List of queries",
+          "type": "array",
+          "items": {
+            "oneOf": [
+              {
+                "$ref": "#/definitions/patternQuery"
+              },
+              {
+                "$ref": "#/definitions/codeQuery"
+              },
+              {
+                "$ref": "#/definitions/notQuery"
+              },
+              {
+                "$ref": "#/definitions/andQuery"
+              },
+              {
+                "$ref": "#/definitions/orQuery"
+              }
+            ]
+          }
+        }
+      },
+      "required": [
+        "and"
+      ]
+    },
+    "orQuery": {
+      "description": "Or operation",
+      "type": "object",
+      "properties": {
+        "or": {
+          "description": "List of queries",
+          "type": "array",
+          "items": {
+            "oneOf": [
+              {
+                "$ref": "#/definitions/patternQuery"
+              },
+              {
+                "$ref": "#/definitions/codeQuery"
+              },
+              {
+                "$ref": "#/definitions/notQuery"
+              },
+              {
+                "$ref": "#/definitions/andQuery"
+              },
+              {
+                "$ref": "#/definitions/orQuery"
+              }
+            ]
+          }
+        }
+      },
+      "required": [
+        "or"
+      ]
+    },
+    "action": {
+      "description": "Action to be executed",
+      "type": "object",
+      "allOf": [
+        {
+          "properties": {
+            "code": {
+              "description": "Code to be executed",
+              "oneOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "minItems": 1
+                },
+                {
+                  "type": "object"
+                }
+              ]
+            },
+            "endpoint": {
+              "description": "Endpoint to execute the code",
+              "type": "string"
+            },
+            "opts": {
+              "description": "Optional data to be sent to the endpoint",
+              "type": "object"
+            },
+            "libraries": {
+              "$ref": "#/definitions/libraries"
+            }
+          },
+          "required": [
+            "code"
+          ]
+        },
+        {
+          "$ref": "#/definitions/location"
+        }
+      ]
+    }
+  },
+  "title": "Rule",
+  "description": "Rule for rules system",
+  "type": "object",
+  "properties": {
+    "when": {
+      "$ref": "#/definitions/patternQuery"
+    },
+    "schedule": {
+      "description": "Schedule for the rule",
+      "type": "string"
+    },
+    "condition": {
+      "description": "Conditions to be evaluated",
+      "oneOf": [
+        {
+          "$ref": "#/definitions/patternQuery"
+        },
+        {
+          "$ref": "#/definitions/codeQuery"
+        },
+        {
+          "$ref": "#/definitions/notQuery"
+        },
+        {
+          "$ref": "#/definitions/andQuery"
+        },
+        {
+          "$ref": "#/definitions/orQuery"
+        }
+      ]
+    },
+    "action": {
+      "$ref": "#/definitions/action"
+    },
+    "actions": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/action"
+      }
+    }
+  },
+  "allOf": [
+    {
+      "oneOf": [
+        {
+          "required": [
+            "when"
+          ]
+        },
+        {
+          "required": [
+            "schedule"
+          ]
+        }
+      ]
+    },
+    {
+      "oneOf": [
+        {
+          "required": [
+            "action"
+          ]
+        },
+        {
+          "required": [
+            "actions"
+          ]
+        }
+      ]
+    }
+  ]
+}
