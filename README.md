@@ -43,7 +43,7 @@ This software is released under the Apache License, Version 2.0.  See
 To compile, you need [Go](https://golang.org/).  Then
 
 ```Shell
-(cd rulesys && go install)
+(cd rulesys && go get . && go install)
 bin/startengine.sh &
 ENDPOINT=http://localhost:8001
 LOCATION=here
