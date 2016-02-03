@@ -323,7 +323,7 @@ func TestCodeQueryFromMapBad(t *testing.T) {
 	}
 }
 
-func TestCodeQueryFromMapGood(t *testing.T) {
+func TestCodeQueryFromMapGoodSimple(t *testing.T) {
 	m := map[string]interface{}{"code": "1+2"}
 	_, _, err := CodeQueryFromMap(nil, m)
 	if err != nil {
@@ -331,7 +331,31 @@ func TestCodeQueryFromMapGood(t *testing.T) {
 	}
 }
 
-func TestPatternQueryFromMapBad(t *testing.T) {
+func TestCodeQueryFromMapGoodArray1(t *testing.T) {
+	m := map[string]interface{}{"code": []string{"var x = 1;", "x + 1;"}}
+	_, _, err := CodeQueryFromMap(nil, m)
+	if err != nil {
+		t.Fatal("shouldn't have reported an error")
+	}
+}
+
+func TestCodeQueryFromMapGoodArray2(t *testing.T) {
+	m := map[string]interface{}{"code": []interface{}{"var x = 1;", "x + 1;"}}
+	_, _, err := CodeQueryFromMap(nil, m)
+	if err != nil {
+		t.Fatal("shouldn't have reported an error")
+	}
+}
+
+func TestCodeQueryFromMapBadArray(t *testing.T) {
+	m := map[string]interface{}{"code": []interface{}{"var x = 1;", 42}}
+	q, _, err := CodeQueryFromMap(nil, m)
+	if err == nil {
+		t.Fatalf("should have reported an error (%#v)", q)
+	}
+}
+
+func TestPatternQueryFromMapBadSimple(t *testing.T) {
 	m := map[string]interface{}{"pattern": 42}
 	_, _, err := PatternQueryFromMap(nil, m)
 	if err == nil {

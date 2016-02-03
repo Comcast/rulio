@@ -289,11 +289,24 @@ func CodeQueryFromMap(ctx *Context, m map[string]interface{}) (Query, bool, erro
 	if !ok {
 		return nil, false, nil
 	}
-	s, ok := code.(string)
-	if !ok {
+	switch vv := code.(type) {
+	case string:
+		q.Code = vv
+	case []interface{}:
+		for _, x := range vv {
+			s, ok := x.(string)
+			if !ok {
+				return nil, false, fmt.Errorf("%#v is not a string", code)
+			}
+			q.Code += s + "\n"
+		}
+	case []string:
+		for _, s := range vv {
+			q.Code += s + "\n"
+		}
+	default:
 		return nil, false, fmt.Errorf("%#v is not a string", code)
 	}
-	q.Code = s
 
 	q.Libraries = make([]string, 0, 0)
 	libraries, ok := m["libraries"]
