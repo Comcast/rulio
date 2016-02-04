@@ -23,8 +23,11 @@
 ENDPOINT=${ENDPOINT:-http://localhost:8001}
 LOCATION=${LOCATION:here}
 
-WEATHER_KEY="2de143494c0b295cca9337e1e96b00e0"
 WEATHER="http://api.openweathermap.org/data/2.5/weather?units=metric&appid=$WEATHER_KEY"
+if [ -z "$WEATHER_KEY" ]; then
+    echo "Need WEATHER_KEY for http://openweathermap.org/current" >&2
+    exit 1
+fi
 
 curl -s "$ENDPOINT/loc/admin/clear?location=$LOCATION"
 
