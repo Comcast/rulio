@@ -57,7 +57,7 @@ EOF
 
 # Generate some events with increasing timestamps.
 for M in $(seq 0 5); do
-    cat <<EOF | curl -s -d "@-" $ENDPOINT/api/loc/events/ingest | bin/jq -c .values
+    cat <<EOF | curl -s -d "@-" $ENDPOINT/api/loc/events/ingest | tee ingest.js | jq -c .result.values
 {"location":"$LOCATION", "event":{"event":"broken","max":3, "ts":"2015-08-10T13:55:0$M-05:00"}}
 EOF
 done
@@ -65,7 +65,7 @@ done
 # Generate some events with increasing timestamps a little later than
 # the last batch.
 for M in $(seq 0 5); do
-    cat <<EOF | curl -d -d "@-" $ENDPOINT/api/loc/events/ingest | bin/jq -c .values
+    cat <<EOF | curl -d -d "@-" $ENDPOINT/api/loc/events/ingest | jq -c .result.values
 {"location":"$LOCATION", "event":{"event":"broken","max":3, "ts":"2015-08-10T13:55:1$M-05:00"}}
 EOF
 done
