@@ -43,7 +43,7 @@ var blockProfileRate = genericFlags.Int("blockprofilerate", 0, "runtime.SetBlock
 var httpProfilePort = genericFlags.String("httpprofileport", "localhost:6060", "Run an HTTP server that serves profile data; 'none' to turn off")
 var verbosity = genericFlags.String("verbosity", "EVERYTHING", "Logging verbosity.")
 
-var engineFlags = flag.NewFlagSet("engine", flag.PanicOnError)
+var engineFlags = flag.NewFlagSet("engine", flag.ExitOnError)
 var linearState = engineFlags.Bool("linear-state", false, "linear (or indexed) state?")
 var maxPending = engineFlags.Int("max-pending", 0, "max pending requests; 0 means no max")
 var maxLocations = engineFlags.Int("max-locations", 1000, "Max locations")
@@ -62,7 +62,7 @@ var checkState = engineFlags.Bool("check-state", false, "Whether to check for st
 //
 // This CLI exposes the complete storage API, so you can do surgery on
 // locations if you really want to.
-var storeFlags = flag.NewFlagSet("storage", flag.PanicOnError)
+var storeFlags = flag.NewFlagSet("storage", flag.ExitOnError)
 var storeType = storeFlags.String("storage", "dynamodb", "storage type")
 var storeConfig = storeFlags.String("storage-config", "us-west-2:rulestest", "storage type")
 var storeClose = storeFlags.Bool("close", false, "close storage")
@@ -303,12 +303,13 @@ func storage(args []string, wg *sync.WaitGroup) []string {
 }
 
 func usage() {
-	fmt.Println("generic flags:")
-	genericFlags.Usage()
-	fmt.Println("engine subcommand:")
-	engineFlags.Usage()
-	fmt.Println("storage subcommand: List locations as final args")
-	storeFlags.Usage()
+	fmt.Fprintf(os.Stderr, "\ngeneric flags:\n\n")
+	genericFlags.PrintDefaults()
+	fmt.Fprintf(os.Stderr, "\nengine subcommand:\n\n")
+	engineFlags.PrintDefaults()
+	fmt.Fprintf(os.Stderr, "\nstorage subcommand: List locations as final args\n\n")
+	storeFlags.PrintDefaults()
+	fmt.Fprintf(os.Stderr, "\n")
 }
 
 func main() {
@@ -318,21 +319,24 @@ func main() {
 	args := os.Args[1:]
 	args = generic(args)
 	if len(args) == 0 {
+		fmt.Fprintf(os.Stderr, "Error: Need a subcommand (engine|storage)\n\n")
 		usage()
 		os.Exit(1)
 	}
+
 	switch args[0] {
 	case "engine":
 		args = engine(args[1:], &wg)
 	case "storage":
 		args = storage(args[1:], &wg)
-	}
-	wg.Wait()
-
-	if len(args) != 0 {
-		// left-over args are bad.  Freak out (even though we
-		// might have started or done something previously.
-		fmt.Printf("bad command line: extra args %#v\n", args)
+	case "help":
+		usage()
+		os.Exit(0)
+	default:
+		fmt.Fprintf(os.Stderr, "bad subcommand '%s'\n", args[0])
 		os.Exit(1)
+
 	}
+
+	wg.Wait()
 }
