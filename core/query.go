@@ -54,8 +54,6 @@ func (bs *Bindings) Bind(ctx *Context, pat interface{}) interface{} {
 		return bound
 
 	default:
-		Log(WARN, ctx, "Bindings.Bind", "warning", fmt.Sprintf("Can't handle %T (%v).\n", pat, pat))
-		// ToDo: Return error?
 		return pat
 	}
 }
