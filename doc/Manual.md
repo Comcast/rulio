@@ -18,7 +18,7 @@ End Copyright -->
 
 # Rules Core Manual
 
-2015-12-10T16:02:53+00:00
+2016-04-15T21:01:36+00:00
 
 1. [Introduction](#introduction)
 1. [Fundamental concepts](#fundamental-concepts)
@@ -34,6 +34,7 @@ End Copyright -->
     1. [In-process Javascript Actions](#in-process-javascript-actions)
     1. [Action executors](#action-executors)
   1. [Parent locations](#parent-locations)
+    1. [Location-specific location cache TTL](#location-specific-location-cache-ttl)
 1. [Event processing](#event-processing)
   1. [Goals](#goals)
   1. [Summary](#summary)
@@ -532,6 +533,19 @@ ancestors' results.
 
 Note that an event sent to a parent location is not automatically sent
 to that location's children.
+
+#### Location-specific location cache TTL
+
+If you set the location property 'cacheTTL', which would be a number
+representing milliseconds, then this system will cache that location
+for that long.  For example:
+
+```Shell
+curl -s --data-urlencode 'fact={"!cacheTTL":600000}' \
+	"$ENDPOINT/api/loc/facts/add?location=homer"
+```
+
+This behavior is handy when using parent locations.
 
 
 ## Event processing

@@ -939,6 +939,10 @@ func (loc *Location) GetPropString(ctx *Context, prop string, def string) (strin
 	return GetPropString(ctx, loc.state, prop, def)
 }
 
+func (loc *Location) GetProp(ctx *Context, prop string, def interface{}) (interface{}, bool, error) {
+	return GetProp(ctx, loc.state, "", prop, def)
+}
+
 func (loc *Location) Stats() *ServiceStats {
 	return loc.stats.Clone()
 }

@@ -195,8 +195,8 @@ type CachedLocation struct {
 	*Location
 }
 
-// openLocation wraps 'newLocation' to check for existence (optionally).
-func (sys *System) openLocation(ctx *Context, name string, checkExists bool) (*Location, error) {
+// OpenLocation wraps 'newLocation' to check for existence (optionally).
+func (sys *System) OpenLocation(ctx *Context, name string, checkExists bool) (*Location, error) {
 	then := Now()
 	atomic.AddUint64(&sys.stats.TotalCalls, uint64(1))
 	atomic.AddUint64(&sys.stats.NewLocations, uint64(1))
@@ -231,22 +231,52 @@ func (cl *CachedLocation) Get(ctx *Context, sys *System, name string, checkExist
 	var err error
 	if loc == nil {
 		Log(INFO, ctx, "CachedLocation.Get", "name", name, "opening", true)
-		loc, err = sys.openLocation(ctx, name, checkExists)
-		if err == nil {
+		loc, err = sys.OpenLocation(ctx, name, checkExists)
+		if err != nil {
+			Log(WARN, ctx, "CachedLocation.Get", "name", name, "when", "OpenLocation", "error", err)
+		} else {
 			cl.Location = loc
+
+			// See if we have a 'cacheTTL' property.  If so, try to use it.
+
+			x, have, err := loc.GetProp(ctx, "cacheTTL", 0)
+			if err != nil {
+				Log(WARN, ctx, "CachedLocation.Get", "name", name, "when", "GetProp", "error", err)
+			} else if have {
+				var ms int
+				if err == nil {
+					Log(WARN, ctx, "CachedLocation.Get", "name", name, "factTTL", x)
+					switch vv := x.(type) {
+					case float64:
+						ms = int(vv)
+					case int:
+						ms = vv
+					default:
+						err = fmt.Errorf("%#v isn't a TTL (ms)", x)
+					}
+				}
+				if err != nil {
+					Log(WARN, ctx, "CachedLocation.Get", "name", name, "when", "cacheTTL", "error", err)
+				} else {
+					then := time.Now().Add(time.Duration(ms) * time.Millisecond)
+					Log(DEBUG, ctx, "CachedLocation.Get", "name", name, "computedExpiration", then)
+					cl.Expires = then
+				}
+			}
+
 		}
 	} else {
-		ctx.SetLoc(loc)
 		Log(DEBUG, ctx, "CachedLocation.Get", "name", name, "opening", false)
+		ctx.SetLoc(loc)
 	}
+	cl.Unlock()
+
 	// Remove from cache if location does not exist so the cache does not explode
 	if nil == cl.Location {
 		sys.CachedLocations.Lock()
 		delete(sys.CachedLocations.locs, name)
 		sys.CachedLocations.Unlock()
 	}
-
-	cl.Unlock()
 
 	return loc, err
 }
@@ -802,16 +832,16 @@ func legalFactWithout(ctx *Context, fact string, prop string) error {
 
 // GetLocation implements core.LocationProvider.
 //
-// Just calls 'findLocation()'.
+// Just calls 'findLocation(,,false)'.
 func (sys *System) GetLocation(ctx *Context, name string) (*Location, error) {
-	return sys.findLocation(ctx, name, true)
+	return sys.findLocation(ctx, name, false)
 }
 
 // findLocation is the main function for getting a location.
 //
 // This function delegates the hard work to 'sys.CachedLocations.Open()'.
 func (sys *System) findLocation(ctx *Context, name string, check bool) (*Location, error) {
-	Log(DEBUG, ctx, "System.findLocation", "name", name)
+	Log(DEBUG, ctx, "System.findLocation", "name", name, "check", check)
 	check = check && sys.checkingExistence(ctx)
 	return sys.CachedLocations.Open(ctx, sys, name, check)
 }
