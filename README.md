@@ -17,11 +17,11 @@ limitations under the License.
 End Copyright -->
 
 
-# Rules System Core
+![Rulio is a rules engine](https://raw.githubusercontent.com/Comcast/rulio/master/doc/Rulio_logo_400x124.png)
 
 ## Overview
 
-A rules system.  You write rules and send events.  You can also write
+A rules engine.  You write rules and send events.  You can also write
 some facts that rules can use.  When an event arrives, the system
 finds candidate rules.  A candidate rule's condition is evaluated to
 find zero or more sets of variable bindings.  For each set of variable
