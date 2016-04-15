@@ -103,6 +103,7 @@ func (cls *CachedLocations) expire(ctx *Context, sys *System, name string, relea
 	var loc *Location
 	dead := false
 	if have {
+		cl.Lock()
 		cl.Pending = !released
 		Log(INFO, ctx, "CachedLocations.expire", "name", name, "cached", "exists")
 		if cl.Pending || cl.Expires.After(time.Now()) {
@@ -111,8 +112,8 @@ func (cls *CachedLocations) expire(ctx *Context, sys *System, name string, relea
 		} else {
 			Log(INFO, ctx, "CachedLocations.expire", "name", name, "cached", "expired")
 			delete(cls.locs, name)
-			cl = nil
 		}
+		cl.Unlock()
 	}
 	return loc, dead
 }
