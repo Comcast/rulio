@@ -71,10 +71,10 @@ package dynamodb
 
 // Utilities:
 //
-//   aws dynamodb scan --table-name rfds --endpoint-url http://pulsar-ch2.sys.comcast.net:9000
-//   aws dynamodb update-item --table-name rfds --endpoint-url http://pulsar-ch2.sys.comcast.net:9000 --key '{"id":{"S":"here"}}' --attribute-updates '{"wants":{"Value":{"S":"tacos"}}}'
-//   aws dynamodb get-item --table-name rfds --endpoint-url http://pulsar-ch2.sys.comcast.net:9000 --key '{"id":{"S":"here"}}'
-//   aws dynamodb delete-item --table-name rfds --endpoint-url http://pulsar-ch2.sys.comcast.net:9000 --key '{"id":{"S":"here"}}'
+//   aws dynamodb scan --table-name rfds --endpoint-url http://...
+//   aws dynamodb update-item --table-name rfds --endpoint-url http://... --key '{"id":{"S":"here"}}' --attribute-updates '{"wants":{"Value":{"S":"tacos"}}}'
+//   aws dynamodb get-item --table-name rfds --endpoint-url http://... --key '{"id":{"S":"here"}}'
+//   aws dynamodb delete-item --table-name rfds --endpoint-url http://... --key '{"id":{"S":"here"}}'
 
 import (
 	"errors"
