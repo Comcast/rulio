@@ -21,7 +21,6 @@ import (
 	"fmt"
 	"strings"
 	"time"
-
 	// "code.google.com/p/rog-go/exp/deepcopy" // Broken
 )
 

@@ -153,14 +153,12 @@ func TestEventEmbedded(t *testing.T) {
 
 }
 
-func TestEventUpdate(t *testing.T) {
-	update := "wine"
-
+func TestEventWithAppBinding(t *testing.T) {
 	ctx, loc := TestingLocation(t)
 	ctx.Verbosity = EVERYTHING
 	ctx.App = &BindingApp{
 		map[string]interface{}{
-			"x": update,
+			"brand": "Duff",
 		},
 	}
 
@@ -170,7 +168,7 @@ func TestEventUpdate(t *testing.T) {
 	{
 		id, err := loc.AddRule(ctx, "r1", mapJS(`
 {"when":{"pattern":{"wants":"?x"}},
- "condition":{"pattern":{"has":"?x"}},
+ "condition":{"code":"brand == 'Duff'"},
  "action":{"code":"console.log(JSON.stringify(event)); console.log(x); Env.out('somebody wants ' + x)"}}
 `))
 		if err != nil {
@@ -189,6 +187,10 @@ func TestEventUpdate(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	// "I would kill everyone in this room for a drop of sweet beer."
+	//
+	//   --Homer Simpson
+
 	go func() {
 		_, err := loc.ProcessEvent(ctx, mapJS(`{"wants":"beer"}`))
 		if err != nil {
@@ -198,7 +200,7 @@ func TestEventUpdate(t *testing.T) {
 
 	select {
 	case heard := <-c:
-		if heard != "somebody wants "+update {
+		if heard != "somebody wants beer" {
 			t.Fatalf("unexpected message '%s'", heard)
 		}
 	case <-time.After(5 * 1e9):
@@ -216,7 +218,46 @@ func (ba *BindingApp) GenerateHeaders(ctx *Context) map[string]string {
 
 func (ba *BindingApp) ProcessBindings(ctx *Context, bs Bindings) Bindings {
 	for k, v := range ba.bindings {
-		bs["?"+k] = v
+		if _, have := bs[k]; !have {
+			bs[k] = v
+		}
 	}
 	return bs
+}
+
+func TestEventConditionBindings(t *testing.T) {
+	ctx, loc := TestingLocation(t)
+	ctx.Verbosity = EVERYTHING
+	c := make(chan interface{})
+	ctx.AddValue("out", c)
+
+	{
+		id, err := loc.AddRule(ctx, "r1", mapJS(`
+{"when":{"pattern":{"wants":"?x"}},
+ "condition":{"code":"console.log('needs ' + event.needs); event.needs == Env.bindings['x'];"},
+ "action":{"code":"console.log(JSON.stringify(event)); console.log(x); Env.out('somebody wants and needs ' + x)"}}
+`))
+		if err != nil {
+			t.Fatal(err)
+		}
+		if id != "r1" {
+			t.Fatal(fmt.Errorf("wrong id: '%s'", id))
+		}
+	}
+
+	go func() {
+		_, err := loc.ProcessEvent(ctx, mapJS(`{"wants":"beer","needs":"beer"}`))
+		if err != nil {
+			t.Fatal(err)
+		}
+	}()
+
+	select {
+	case heard := <-c:
+		if heard != "somebody wants and needs beer" {
+			t.Fatalf("unexpected message '%s'", heard)
+		}
+	case <-time.After(5 * time.Second):
+		t.Fatal("timeout")
+	}
 }

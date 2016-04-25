@@ -28,7 +28,6 @@ import (
 	"strings"
 	"sync"
 	"time"
-
 	// "code.google.com/p/rog-go/exp/deepcopy" // Broken
 )
 

@@ -18,7 +18,7 @@ End Copyright -->
 
 # Rules Core Manual
 
-2016-04-15T21:01:36+00:00
+2016-04-25T20:59:12+00:00
 
 1. [Introduction](#introduction)
 1. [Fundamental concepts](#fundamental-concepts)
@@ -317,13 +317,17 @@ Example query:
 query.  An `and` or `or` value should be an array of subqueries.  A
 `not` value is a single subquery.
 
-A `code` value is Javascript.  When executed, the Javascript
-environment includes bindings for all variables that are bound at that
-point in the query execution.  If the value returned by block is
-truthy, then the condition evaluation continues.  In addition, if the
-value returned is an object, then the set of bindings is extended with
-those name/value pairs.  The keys should be the variables without the
-`?` prefix.
+A `code` value is string of Javascript or an array of strings of
+Javascript.  When executed, the Javascript environment includes
+bindings for all variables that are bound at that point in the query
+execution.  In addition, the variables `event`, `location`, and
+`ruleId` are bound to the matching event, the current location, and
+the matching rule id respectively.
+
+If the value returned by block is truthy, then the condition
+evaluation continues.  In addition, if the value returned is an
+object, then the set of bindings is extended with those name/value
+pairs.  The keys should be the variables without the `?` prefix.
 
 The order of conjuncts in an `and` and disjuncts in an `or` is
 important (at least for now).  That order gives the query plan.  As a
@@ -361,6 +365,10 @@ variables.  For example, if you have a matching `when` clause like
 ```Javascript
 {"pattern":{"likes":"?liked"}}
 ```
+
+As for `code` clauses in condition evaluation, the variables `event`,
+`location`, and `ruleId` are bound to the matching event, the current
+location, and the matching rule id respectively.
 
 Then the Javascript variable `liked` will be bound (per action
 invocation).

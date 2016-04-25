@@ -203,6 +203,30 @@ func (w *EvalRuleCondition) Do(ctx *Context, loc *Location) {
 	qr.Bss = make([]Bindings, 1)
 	qr.Bss[0] = w.Bindings
 
+	// We extend the bindings here so the condition evaluation (if
+	// any) sees them.
+
+	for _, bs := range qr.Bss {
+		_, haveEventBinding := bs["event"]
+		if !haveEventBinding {
+			bs["event"] = w.Parent.Parent.Event
+		}
+
+		_, haveLocation := bs["?location"]
+		if !haveLocation && loc != nil {
+			bs["location"] = loc.Name
+		}
+
+		_, haveRuleId := bs["?ruleId"]
+		if !haveRuleId {
+			bs["ruleId"] = w.Parent.Rule.Id
+		}
+
+		if nil != ctx && nil != ctx.App {
+			bs = ctx.App.ProcessBindings(ctx, bs)
+		}
+	}
+
 	q := w.Parent.Rule.Condition.Get()
 	if q != nil {
 		qc := QueryContext{[]string{loc.Name}}
@@ -222,25 +246,6 @@ func (w *EvalRuleCondition) Do(ctx *Context, loc *Location) {
 	}
 
 	for _, bs := range qr.Bss {
-		_, haveEventBinding := bs["?event"]
-		if !haveEventBinding {
-			bs["?event"] = w.Parent.Parent.Event
-		}
-
-		_, haveLocation := bs["?location"]
-		if !haveLocation && loc != nil {
-			bs["?location"] = loc.Name
-		}
-
-		_, haveRuleId := bs["?ruleId"]
-		if !haveRuleId {
-			bs["?ruleId"] = w.Parent.Rule.Id
-		}
-
-		if nil != ctx && nil != ctx.App {
-			bs = ctx.App.ProcessBindings(ctx, bs)
-		}
-
 		for _, action := range w.Parent.Rule.Actions {
 			child := &ExecRuleAction{
 				Bindings: bs,
