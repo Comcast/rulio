@@ -207,19 +207,19 @@ func (w *EvalRuleCondition) Do(ctx *Context, loc *Location) {
 	// any) sees them.
 
 	for _, bs := range qr.Bss {
-		_, haveEventBinding := bs["event"]
+		_, haveEventBinding := bs["?event"]
 		if !haveEventBinding {
-			bs["event"] = w.Parent.Parent.Event
+			bs["?event"] = w.Parent.Parent.Event
 		}
 
 		_, haveLocation := bs["?location"]
 		if !haveLocation && loc != nil {
-			bs["location"] = loc.Name
+			bs["?location"] = loc.Name
 		}
 
 		_, haveRuleId := bs["?ruleId"]
 		if !haveRuleId {
-			bs["ruleId"] = w.Parent.Rule.Id
+			bs["?ruleId"] = w.Parent.Rule.Id
 		}
 
 		if nil != ctx && nil != ctx.App {
