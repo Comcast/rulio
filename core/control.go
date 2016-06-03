@@ -77,6 +77,10 @@ type Control struct {
 	// Also see InternalFactServices.
 	Services map[string][]string
 
+	// ActionInterpreters maps an action endpoint (property) to an
+	// interpreter.
+	ActionInterpreters map[string]ActionInterpreter
+
 	// InternalFactServices maps logical names to FactServices
 	// (that are implemented within this process).
 	//

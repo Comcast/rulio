@@ -105,3 +105,76 @@ func TestSubstituteBindingsUnbound(t *testing.T) {
 
 	fmt.Printf("x=%#v", x)
 }
+
+func TestOttoActionInterpreter(t *testing.T) {
+	bs := Bindings(map[string]interface{}{"x": 1, "y": 2})
+	a := Action{
+		Code:     "x+y+3",
+		Endpoint: "otto",
+	}
+	want := 1 + 2 + 3
+
+	oai := &OttoActionInterpreter{}
+
+	name := "test"
+	ctx := NewContext(name)
+	store, _ := NewMemStorage(ctx)
+	state, _ := NewIndexedState(ctx, name, store)
+	loc, err := NewLocation(ctx, "test", state, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	f, err := oai.GetThunk(ctx, loc, bs, a)
+	if err != nil {
+		t.Fatal(err)
+	}
+	x, err := f()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if n, is := x.(float64); is {
+		if int(n) == want {
+			return
+		}
+	}
+	t.Fatal(fmt.Sprintf("wanted %v but got %#v", want, x))
+}
+
+func TestActionInterpreters(t *testing.T) {
+	bs := Bindings(map[string]interface{}{"x": 1, "y": 2})
+	a := Action{
+		Code:     "x+y+3",
+		Endpoint: "otto",
+	}
+	want := 1 + 2 + 3
+
+	oai := &OttoActionInterpreter{}
+
+	name := "test"
+	ctx := NewContext(name)
+	store, _ := NewMemStorage(ctx)
+	state, _ := NewIndexedState(ctx, name, store)
+	loc, err := NewLocation(ctx, "test", state, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	loc.Control().ActionInterpreters = map[string]ActionInterpreter{
+		"otto": oai,
+	}
+	f, err := loc.getActionFunc(ctx, bs, a)
+	if err != nil {
+		t.Fatal(err)
+	}
+	x, err := f()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if n, is := x.(float64); is {
+		if int(n) == want {
+			return
+		}
+	}
+	t.Fatal(fmt.Sprintf("wanted %v but got %#v", want, x))
+}

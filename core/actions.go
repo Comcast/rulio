@@ -223,8 +223,102 @@ func (loc *Location) ExecAction(ctx *Context, bs Bindings, a Action) (interface{
 	return x, err
 }
 
+// ActionInterpreter can make a thunk, which can then be executed to
+// interpret an action.
+//
+// The map of available ActionInterpreters is at
+// Location.Control.ActionInterpreters.  Those keys are the Names of
+// the ActionInterpreters.
+type ActionInterpreter interface {
+	// GetThunk returns a function that can be executed to
+	// interpreter the given Action.
+	GetThunk(ctx *Context, loc *Location, bs Bindings, a Action) (func() (interface{}, error), error)
+
+	// GetName is used to find the ActionInterpreter based on an
+	// Action's Endpoint (which is now a very bad name).
+	GetName() string
+}
+
+// OttoActionInterpreter is an example ActionInterpreter that does the
+// same thing (currently) as the built-in "javascript" interpreter.
+type OttoActionInterpreter struct {
+}
+
+// GetName does what you'd thing.
+//
+// For the ActionInterpreter interface.
+func (i *OttoActionInterpreter) GetName() string {
+	return "otto"
+}
+
+// GetThunk returns the thunk that will interpret the action.
+//
+// For the ActionInterpreter interface.
+func (i *OttoActionInterpreter) GetThunk(ctx *Context, loc *Location, bs Bindings, a Action) (func() (interface{}, error), error) {
+	var libraries []string
+
+	if o, given := a.Opts["libraries"]; given {
+		switch vv := o.(type) {
+		case []string:
+			libraries = vv
+		case []interface{}:
+			acc := make([]string, len(vv))
+			for i, lib := range vv {
+				s, ok := lib.(string)
+				if !ok {
+					err := fmt.Errorf("bad library type: %T (%#v)", lib, lib)
+					Log(ERROR|USR, ctx, "core.getActionFunc", "error", err)
+					return nil, err
+				}
+				acc[i] = s
+			}
+			libraries = acc
+		default:
+			err := fmt.Errorf("bad 'libraries' type: %T (%#v)", o, o)
+			Log(ERROR|USR, ctx, "core.getActionFunc", "error", err)
+			return nil, err
+		}
+	}
+
+	script, err := CompileJavascript(ctx, loc, libraries, a.Code.(string))
+	if nil != err {
+		return nil, err
+	}
+
+	return func() (interface{}, error) {
+		Log(DEBUG, ctx, "core.getActionFunc.javascript",
+			"action", a, "stage", "start")
+
+		var props map[string]interface{}
+		c := loc.Control()
+		if c != nil && c.CodeProps != nil {
+			Log(DEBUG, ctx, "core.getActionFunc.javascript",
+				"action", a, "CodeProps", c.CodeProps)
+			props = c.CodeProps
+		} else {
+			Log(DEBUG, ctx, "core.getActionFunc.javascript",
+				"action", a, "CodeProps", nil)
+		}
+
+		v, err := RunJavascript(ctx, bs.StripQuestionMarks(ctx), props, script)
+		if err != nil {
+			// Don't know if this error is a user error.
+			// Probably a user error.  We'll log both for now.
+			Log(ERROR|USR, ctx, "core.getActionFunc.javascript", "action", a, "error", err)
+			return nil, err
+		}
+		Log(DEBUG, ctx, "core.getActionFunc.javascript",
+			"action", a, "stage", "done")
+		return v, err
+	}, nil
+}
+
 func (loc *Location) getActionFunc(ctx *Context, bs Bindings, a Action) (func() (interface{}, error), error) {
 	Log(DEBUG, ctx, "core.getActionFunc", "action", a)
+
+	if i, have := loc.Control().ActionInterpreters[a.Endpoint]; have {
+		return i.GetThunk(ctx, loc, bs, a)
+	}
 
 	if a.Endpoint == "javascript" {
 		var libraries []string
