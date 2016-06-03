@@ -136,7 +136,7 @@ curl -s --data-urlencode 'pattern={"likes":"?x"}' \
 echo "# $N       Check again to make sure we see only one such fact"
 curl -s --data-urlencode 'pattern={"likes":"?x"}' \
     "$ENDPOINT/api/loc/facts/search?location=$ACCOUNT" | tee $DIR/$N.txt | \
-    bin/jq '.Found|length' | grep -q 1 && pass || fail
+    jq '.Found|length' | grep -q 1 && pass || fail
 
 echo "# $N       Verify that the cron rule is gone"
 curl -s "$ENDPOINT/api/loc/facts/get?location=$ACCOUNT&id=onceTest" | tee $DIR/$N.txt | \
@@ -258,7 +258,7 @@ curl -s --data-urlencode 'fact={"id":"homer","!likes":"beer"}' \
 echo "# $N       Make sure we get just one value"
 curl -s --data-urlencode 'pattern={"id":"homer","!likes":"?x"}' \
     "$ENDPOINT/api/loc/facts/search?location=$ACCOUNT" | tee $DIR/$N.txt | \
-    bin/jq '.Found|length' | grep -q 1 && pass || fail
+    jq '.Found|length' | grep -q 1 && pass || fail
 
 echo "# $N       Remove the fact"
 curl -s "$ENDPOINT/api/loc/facts/rem?location=$ACCOUNT&id="'!homer.likes' | tee $DIR/$N.txt | \
@@ -465,7 +465,7 @@ curl -s --data-urlencode 'event={"wants":"tacos"}' \
     tee $DIR/$N.txt | \
     grep -q '"msg":"problem"' && pass || fail
 
-cat $DIR/$((N-1)).txt | bin/jq -c .result > $DIR/$N.json
+cat $DIR/$((N-1)).txt | jq -c .result > $DIR/$N.json
 R=$N
 echo "# $N       Retry the event processing but the action should still fail"
 curl -s --data-urlencode "work@$DIR/$R.json" \
