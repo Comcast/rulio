@@ -60,7 +60,7 @@ func (a *CleanAction) UnmarshalJSON(bs []byte) error {
 		x.Endpoint = "javascript"
 	}
 	var err error
-	if x.Code, err = convertCode(x.Code); err != nil {
+	if x.Code, err = GetCode(x.Code); err != nil {
 		return err
 	}
 
@@ -317,6 +317,7 @@ func (loc *Location) getActionFunc(ctx *Context, bs Bindings, a Action) (func() 
 	Log(DEBUG, ctx, "core.getActionFunc", "action", a)
 
 	if i, have := loc.Control().ActionInterpreters[a.Endpoint]; have {
+		Log(DEBUG, ctx, "core.getActionFunc", "endpoint", a.Endpoint, "source", "ActionInterpreters")
 		return i.GetThunk(ctx, loc, bs, a)
 	}
 
@@ -431,7 +432,12 @@ func (loc *Location) getActionFunc(ctx *Context, bs Bindings, a Action) (func() 
 	return nil, fmt.Errorf("Unsupported action endpoint '%s' (given '%s')", endpoint, a.Endpoint)
 }
 
-func convertCode(x interface{}) (string, error) {
+// GetCode makes a single string from either a string or an array of strings.
+//
+// If the given thing is an array of strings, they are joined with newlines.
+//
+// If the given thing isn't a string or array of string, returns an error.
+func GetCode(x interface{}) (string, error) {
 	switch vv := x.(type) {
 	case string:
 		return vv, nil
