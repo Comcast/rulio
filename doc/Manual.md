@@ -18,7 +18,7 @@ End Copyright -->
 
 # Rules Core Manual
 
-2016-04-25T20:59:12+00:00
+2016-06-23T17:59:44+00:00
 
 1. [Introduction](#introduction)
 1. [Fundamental concepts](#fundamental-concepts)
@@ -293,8 +293,9 @@ As an example, the following rule will be evaluated in 30 minutes.
 
 #### Conditions
 
-A rule can include a `condition` clause, which represents a fact
-query.
+A rule can include a `condition` clause, which can query facts and
+execute arbitrary code to extend bindings that resulted from the
+`when` clause event matching.
 
 A query is a map that specifies a search for facts.  Roughly speaking,
 a query consists of fact [patterns](#patterns) along with `and`s,
