@@ -792,7 +792,17 @@ func (loc *Location) GetParents(ctx *Context) ([]string, error) {
 //
 // To remove a location's parents, just pass a zero array.
 func (loc *Location) setParents(ctx *Context, parents []string) (string, error) {
-	return SetProp(ctx, loc.state, "", "parents", parents)
+	// We might want to search for this property as a fact.  If
+	// so, our pattern matching code (as it's currently written)
+	// will fail to match and []interface{} of strings and an
+	// otherwise-matching []string.
+	//
+	// So we do
+	ps := make([]interface{}, len(parents))
+	for i, p := range parents {
+		ps[i] = p
+	}
+	return SetProp(ctx, loc.state, "", "parents", ps)
 }
 
 // SetParents sets a location's parents.
