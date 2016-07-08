@@ -232,12 +232,12 @@ func extractTermsAux(ctx *Context, x interface{}, terms StringSet, depth int) {
 		}
 	case []interface{}:
 		for _, y := range vv {
-			extractTermsAux(ctx, &y, terms, depth+1)
+			extractTermsAux(ctx, y, terms, depth+1)
 		}
 	case []string:
 		// ToDo: Contemplate use of ISlice.
 		for _, s := range vv {
-			extractTermsAux(ctx, &s, terms, depth+1)
+			extractTermsAux(ctx, s, terms, depth+1)
 		}
 	default:
 		// We don't index what we don't understand -- or what
