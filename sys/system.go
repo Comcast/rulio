@@ -140,7 +140,7 @@ func (cls *CachedLocations) Open(ctx *Context, sys *System, name string, check b
 		if ttl != Forever {
 			expires = time.Now().Add(ttl)
 		}
-		Log(INFO, ctx, "CachedLocations.Open", "name", name, "expires", expires)
+		Log(INFO, ctx, "CachedLocations.Open", "name", name, "expires", expires.String())
 		cl := &CachedLocation{
 			Expires: expires,
 		}
