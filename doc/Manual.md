@@ -325,7 +325,11 @@ execution.  In addition, the variables `event`, `location`, and
 `ruleId` are bound to the matching event, the current location, and
 the matching rule id respectively.
 
-If the value returned by block is truthy, then the condition
+The `code` is evaluated as a block, so the value of the last
+expression becomes the value of the code block.  No explicit `return`
+is needed or permitted.
+
+If the value returned by the block is truthy, then the condition
 evaluation continues.  In addition, if the value returned is an
 object, then the set of bindings is extended with those name/value
 pairs.  The keys should be the variables without the `?` prefix.
