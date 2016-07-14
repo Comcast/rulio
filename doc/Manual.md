@@ -532,6 +532,28 @@ as a set, not a list or array.
 
 The API `GetParents()` gets a location's parents (if any).
 
+This parents data is represented as fact (though it has special
+"property" indexing to make read access more efficient):x
+
+```Javascript
+{"!parent":["homer","marge"]}
+```
+
+The id of the fact is `!parents`.
+
+You can query parents in, say, a rule condition.  For example:
+
+```Javascript
+{"pattern":{"!parents":["?parent"]}}
+```
+
+or
+
+```Javascript
+{"pattern":{"!parents":"?parents"}}
+```
+
+
 A location can disable an inherited rule.
 
 Facts and rules ids are not automatically qualified by their host
