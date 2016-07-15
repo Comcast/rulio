@@ -32,7 +32,6 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"log"
 	"os"
 	"regexp"
 	"runtime"
@@ -815,7 +814,7 @@ func (s *Service) ProcessRequest(ctx *core.Context, m map[string]interface{}, ou
 		if err != nil {
 			return nil, err
 		}
-		log.Println(*work)
+
 		js, err = json.Marshal(work)
 		if err != nil {
 			return nil, err
