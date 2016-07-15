@@ -17,6 +17,7 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"flag"
@@ -24,8 +25,10 @@ import (
 	"net/http"
 	_ "net/http/pprof"
 	"os"
+	"os/exec"
 	"runtime"
 	"runtime/pprof"
+	"strings"
 	"sync"
 	"time"
 
@@ -51,6 +54,7 @@ var maxFacts = engineFlags.Int("max-facts", 1000, "Max facts per location")
 var accVerbosity = engineFlags.String("acc-verbosity", "EVERYTHING", "Log accumulator verbosity.")
 var storageType = engineFlags.String("storage", "mem", "storage type")
 var storageConfig = engineFlags.String("storage-config", "", "storage config")
+var bashActions = engineFlags.Bool("bash-actions", false, "enable Bash script actions")
 
 var enginePort = engineFlags.String("engine-port", ":8001", "port engine will serve")
 var locationTTL = engineFlags.String("ttl", "forever", "Location TTL, a duration, 'forever', or 'never'")
@@ -166,8 +170,13 @@ func engine(args []string, wg *sync.WaitGroup) []string {
 		panic(err)
 	}
 	locCtl := &core.Control{
-		MaxFacts:  1000,
+		MaxFacts:  *maxFacts,
 		Verbosity: verb,
+	}
+	if *bashActions {
+		locCtl.ActionInterpreters = map[string]core.ActionInterpreter{
+			"bash": &BashActionInterpreter{},
+		}
 	}
 	cont.DefaultLocControl = locCtl
 
@@ -176,11 +185,6 @@ func engine(args []string, wg *sync.WaitGroup) []string {
 		panic(err)
 	}
 
-	locCont := &core.Control{
-		MaxFacts: *maxFacts,
-	}
-	ctl := sys.Control()
-	ctl.DefaultLocControl = locCont
 	ctx.SetLogValue("app.id", "rulesys")
 	core.UseCores(ctx, false)
 
@@ -339,4 +343,70 @@ func main() {
 	}
 
 	wg.Wait()
+}
+
+// BashActionInterpreter is an example action interpreter for Bash scripts.
+//
+// Bindings are added to the environment with variable names that
+// start with an underscore.  The variable names are also upper-cased
+// (and the leading question mark is stripped).  The value of the
+// variable _EVENT is JSON.
+//
+// On error, the error is returned throught the standard path.
+//
+// Example use:
+//
+//   curl -s "$ENDPOINT/api/loc/admin/clear?location=$LOCATION"
+//
+//   cat <<EOF | curl -s -d "@-" "$ENDPOINT/api/loc/rules/add?location=$LOCATION"
+//   {"rule": {"when":{"pattern":{"wants":"?x"}},
+//             "action":{"code":"uptime; env; touch \"/tmp/\$_X\"",
+//                       "endpoint":"bash"}}}
+//   EOF
+//
+//   curl -d 'event={"wants":"tacos"}' "$ENDPOINT/api/loc/events/ingest?location=$LOCATION" | \
+//      python -mjson.tool
+//
+//
+type BashActionInterpreter struct {
+}
+
+func (i *BashActionInterpreter) GetName() string {
+	return "bash"
+}
+
+func (i *BashActionInterpreter) GetThunk(ctx *core.Context, loc *core.Location, bs core.Bindings, a core.Action) (func() (interface{}, error), error) {
+
+	return func() (interface{}, error) {
+		core.Log(core.DEBUG, ctx, "BashActionIntpreter.GetThunk", "action", a, "bs", bs)
+		code, err := core.GetCode(a.Code)
+		if err != nil {
+			return nil, err
+		}
+
+		env := make([]string, 0, len(bs))
+		for p, v := range bs {
+			p = strings.ToUpper(p[1:])
+			if p == "EVENT" {
+				js, err := json.Marshal(&v)
+				if err != nil {
+					return nil, err
+				}
+				v = string(js)
+			}
+			env = append(env, fmt.Sprintf("_%s=%s", p, v))
+		}
+
+		cmd := exec.Command("bash")
+		cmd.Stdin = strings.NewReader(code)
+		cmd.Env = env
+		var out bytes.Buffer
+		cmd.Stdout = &out
+		if err = cmd.Run(); err != nil {
+			core.Log(core.INFO, ctx, "BashActionIntpreter.GetThunk", "action", a, "error", err)
+			return nil, err
+		}
+		return out.String(), nil
+	}, nil
+
 }
