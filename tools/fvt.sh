@@ -543,6 +543,44 @@ curl -s --data-urlencode 'event={"wants":"chips"}' \
    "$ENDPOINT/api/loc/events/ingest?location=$ACCOUNT" | tee $DIR/$N.txt | \
    grep -qF '"values":[]' && pass || fail
 
+## deleteWith
+
+echo "#        Clear location"
+((N++)); curl -s "$ENDPOINT/api/loc/admin/clear?location=$ACCOUNT" | tee $DIR/$N.txt | \
+    grep -q "okay" && pass || fail
+
+echo "# $N       Add a fact"
+curl -s --data-urlencode 'fact={"have":"tacos"}' \
+    "$ENDPOINT/api/loc/facts/add?location=$ACCOUNT&id=f1" | tee $DIR/$N.txt | \
+    grep -q '"id"' && pass || fail
+
+echo "# $N       Search for fact we added"
+curl -s --data-urlencode 'pattern={"have":"?x"}' \
+    "$ENDPOINT/api/loc/facts/search?location=$ACCOUNT" | tee $DIR/$N.txt | \
+    grep -q "tacos" && pass || fail
+
+echo "# $N       Add a dependent fact"
+curl -s --data-urlencode 'fact={"likes":"chips","deleteWith":["f1"]}' \
+    "$ENDPOINT/api/loc/facts/add?location=$ACCOUNT&id=f2" | tee $DIR/$N.txt | \
+    grep -q '"f2"' && pass || fail
+
+echo "# $N       Get the fact by id"
+curl -s "$ENDPOINT/api/loc/facts/get?location=$ACCOUNT&id=f2" | tee $DIR/$N.txt | \
+    grep -q 'chips' && pass || fail
+
+echo "# $N       Delete the dependency"
+curl -s "$ENDPOINT/api/loc/facts/rem?location=$ACCOUNT&id=f1" | tee $DIR/$N.txt | \
+    grep -q 'removed' && pass || fail
+
+echo "# $N       Verify that we deleted the dependency"
+curl -s "$ENDPOINT/api/loc/facts/get?location=$ACCOUNT&id=f1" | tee $DIR/$N.txt | \
+    grep -q 'not found' && pass || fail
+
+echo "# $N       Verify that we deleted the second fact"
+curl -s "$ENDPOINT/api/loc/facts/get?location=$ACCOUNT&id=f2" | tee $DIR/$N.txt | \
+    grep -q 'not found' && pass || fail
+
+
 echo "Passed: $PASSES"
 echo "Failed: $FAILURES"
 

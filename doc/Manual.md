@@ -172,6 +172,14 @@ absolute time, not a delta.  Alternately, you can specify a `ttl`,
 which should be a string in Go
 [`ParseDuration` syntax](http://golang.org/pkg/time/#ParseDuration).
 
+A fact can be marked to be deleted when another fact is deleted.
+Include the property `deleteWith` with an array value that contains
+the id of the fact on which this fact depends.  When a fact _f1_ in
+another fact _f2_'s `deleteWith` is deleted, fact _f2_ will also be
+deleted.  For example, the fact `{"likes":"tacos",
+"deleteWith":["homer"]}}` will be deleted when another fact with id
+`homer` is deleted.  Note that a rule is a fact, so a rule can have a
+functionality `deleteWith` property.
 
 ### Events
 
@@ -266,6 +274,10 @@ By default, a rule action's `code` is Javascript.  But
 Rules are stored persistently by [location](#locations).  In fact,
 rules are just special facts, but rules are indexed in a manner that
 allows relatively efficient rule dispatch.
+
+A rule is a (special) fact, so a rule with a `deleteWith` value will
+be deleted when any of the specified facts (including rules) are
+deleted.
 
 
 #### Scheduled rules
