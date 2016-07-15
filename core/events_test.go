@@ -20,6 +20,8 @@ import (
 	"fmt"
 	"testing"
 	"time"
+
+	"github.com/robertkrimen/otto"
 )
 
 func TestEventBasic(t *testing.T) {
@@ -223,6 +225,11 @@ func (ba *BindingApp) ProcessBindings(ctx *Context, bs Bindings) Bindings {
 		}
 	}
 	return bs
+}
+
+func (ba *BindingApp) UpdateJavascriptRuntime(ctx *Context, runtime *otto.Otto) error {
+	runtime.Set("Napoleon", "Dynamite")
+	return nil
 }
 
 func TestEventConditionBindings(t *testing.T) {

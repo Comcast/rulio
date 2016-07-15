@@ -270,3 +270,15 @@ func TestJavascriptExec(t *testing.T) {
 	}
 
 }
+
+func TestJavascriptAppUpdate(t *testing.T) {
+	ctx := TestContext("Test")
+	ctx.App = &BindingApp{}
+	got, err := RunJavascript(ctx, nil, nil, "Napoleon")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if s, ok := got.(string); !ok || s != "Dynamite" {
+		t.Fatalf("didn't expect %#v", got)
+	}
+}

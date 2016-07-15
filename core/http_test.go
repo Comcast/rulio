@@ -22,6 +22,8 @@ import (
 	"net/http/httptest"
 	"testing"
 	"time"
+
+	"github.com/robertkrimen/otto"
 )
 
 // ToDo: More HTTPRequest tests.
@@ -148,4 +150,8 @@ func (ha *HeaderApp) GenerateHeaders(ctx *Context) map[string]string {
 
 func (ha *HeaderApp) ProcessBindings(ctx *Context, bs Bindings) Bindings {
 	return bs
+}
+
+func (ha *HeaderApp) UpdateJavascriptRuntime(ctx *Context, runtime *otto.Otto) error {
+	return nil
 }

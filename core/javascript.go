@@ -29,9 +29,6 @@ import (
 	"strings"
 	"time"
 
-	// No longer need our own Otto fork since Otto now supports
-	// multiple values from Go functions (which is the behavior
-	// that our fork provided).
 	"github.com/robertkrimen/otto"
 )
 
@@ -477,6 +474,13 @@ func RunJavascript(ctx *Context, bs *Bindings, props map[string]interface{}, src
 	envBindings := make(map[string]interface{})
 
 	runtime := otto.New()
+
+	if ctx != nil && ctx.App != nil {
+		if err := ctx.App.UpdateJavascriptRuntime(ctx, runtime); err != nil {
+			return nil, err
+		}
+	}
+
 	if bs != nil {
 		for k, v := range *bs {
 			Log(DEBUG, ctx, "core.RunJavascript", "var", k, "val", Gorep(v), "type", fmt.Sprintf("%T", v))

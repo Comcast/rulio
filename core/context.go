@@ -19,11 +19,17 @@ package core
 import (
 	"sync"
 	"sync/atomic"
+
+	"github.com/robertkrimen/otto"
 )
 
 type App interface {
 	GenerateHeaders(ctx *Context) map[string]string
 	ProcessBindings(ctx *Context, bs Bindings) Bindings
+
+	// UpdateJavascriptRuntime can be used to modify the
+	// Javascript environment for actions and condition code.
+	UpdateJavascriptRuntime(ctx *Context, runtime *otto.Otto) error
 }
 
 type Context struct {
