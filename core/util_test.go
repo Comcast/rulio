@@ -381,7 +381,7 @@ func TestCoerceFakeFloats(t *testing.T) {
 	}
 
 	{
-		n := 1.23e+12
+		n := 1.23e+32
 		x := CoerceFakeFloats(n)
 		if _, ok := x.(int); ok {
 			t.Fatalf("%#v incorrectly coerced to an int", n)
@@ -398,13 +398,13 @@ func TestCoerceFakeFloats(t *testing.T) {
 			t.Fatalf("%#v isn't a %T", x, m)
 		}
 		x = m2["foo"]
-		if _, ok := x.(int); ok {
+		if _, ok := x.(int); !ok {
 			t.Fatalf("%#v not coerced to an int (%T)", n, x)
 		}
 	}
 
 	{
-		n := 1.23e+12
+		n := 1.23e+32
 		m := make(map[string]interface{})
 		m["foo"] = n
 		x := CoerceFakeFloats(m)
