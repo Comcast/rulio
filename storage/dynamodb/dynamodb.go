@@ -79,8 +79,6 @@ package dynamodb
 import (
 	"errors"
 	"fmt"
-	"github.com/AdRoll/goamz/aws"
-	"github.com/AdRoll/goamz/dynamodb" // See MaxIdleConnsPerHost below
 	"net"
 	"net/http"
 	"strings"
@@ -88,6 +86,9 @@ import (
 	"time"
 
 	. "github.com/Comcast/rulio/core"
+
+	"github.com/AdRoll/goamz/aws"
+	"github.com/AdRoll/goamz/dynamodb" // See MaxIdleConnsPerHost below
 )
 
 // CheckLastUpdated enables the experimental optimistic locking (sort
@@ -335,10 +336,16 @@ func dynamodbTableDescription(name string) *dynamodb.TableDescriptionT {
 	return &dynamodb.TableDescriptionT{
 		TableName: name,
 		AttributeDefinitions: []dynamodb.AttributeDefinitionT{
-			dynamodb.AttributeDefinitionT{"id", "S"},
+			dynamodb.AttributeDefinitionT{
+				Name: "id",
+				Type: "S",
+			},
 		},
 		KeySchema: []dynamodb.KeySchemaT{
-			dynamodb.KeySchemaT{"id", "HASH"},
+			dynamodb.KeySchemaT{
+				AttributeNam: "id",
+				KeyType:      "HASH",
+			},
 		},
 		ProvisionedThroughput: dynamodb.ProvisionedThroughputT{
 			// ToDo: Change provisioned throughput.

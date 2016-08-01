@@ -52,7 +52,7 @@ func TestStorage(t *testing.T) {
 
 	pairs, err := b.Load(ctx, loc)
 	if len(pairs) != 1 {
-		t.Fatal("expected 1 pair on Load but found %d %+v", len(pairs), pairs)
+		t.Fatalf("expected 1 pair on Load but found %d %+v", len(pairs), pairs)
 	}
 	t.Log("pair returned on load", b.Filename)
 
@@ -64,7 +64,7 @@ func TestStorage(t *testing.T) {
 
 	pairs, err = b.Load(ctx, loc)
 	if len(pairs) != 2 {
-		t.Fatal("expected 2 pairs on load but found %d %+v", len(pairs), pairs)
+		t.Fatalf("expected 2 pairs on load but found %d %+v", len(pairs), pairs)
 	}
 	t.Log("two pairs returned on Load")
 }

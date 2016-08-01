@@ -17,9 +17,9 @@
 package dynamodb
 
 import (
-	core "github.com/Comcast/rulio/core"
 	"fmt"
 	"github.com/AdRoll/goamz/dynamodb"
+	core "github.com/Comcast/rulio/core"
 	"log"
 	"testing"
 	"time"
@@ -40,7 +40,7 @@ func TestParseConfig(t *testing.T) {
 			t.Errorf("got wrong table: %s", c.TableName)
 		}
 		if c.Consistent != DefaultConsistent {
-			t.Errorf("got wrong consistency: %s", c.Consistent)
+			t.Errorf("got wrong consistency: %v", c.Consistent)
 		}
 	}
 
@@ -63,7 +63,7 @@ func TestParseConfig(t *testing.T) {
 			t.Errorf("got wrong table: %s", c.TableName)
 		}
 		if c.Consistent != DefaultConsistent {
-			t.Errorf("got wrong consistency: %s", c.Consistent)
+			t.Errorf("got wrong consistency: %v", c.Consistent)
 		}
 	}
 
@@ -79,7 +79,7 @@ func TestParseConfig(t *testing.T) {
 			t.Errorf("got wrong table: %s", c.TableName)
 		}
 		if c.Consistent != false {
-			t.Errorf("got wrong consistency: %s", c.Consistent)
+			t.Errorf("got wrong consistency: %v", c.Consistent)
 		}
 	}
 
