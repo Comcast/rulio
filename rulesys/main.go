@@ -191,7 +191,11 @@ func engine(args []string, wg *sync.WaitGroup) []string {
 	ctx.Verbosity = verb
 	ctx.LogAccumulatorLevel = verb
 
-	engine := &service.Service{sys, nil, nil}
+	engine := &service.Service{
+		System:  sys,
+		Router:  nil,
+		Stopper: nil,
+	}
 	engine.Start(ctx, *rulesURL)
 
 	serv, err := service.NewHTTPService(ctx, engine)
@@ -295,7 +299,10 @@ func storage(args []string, wg *sync.WaitGroup) []string {
 				if err != nil {
 					panic(err)
 				}
-				pair := &core.Pair{[]byte(id), js}
+				pair := &core.Pair{
+					K: []byte(id),
+					V: js,
+				}
 				if err := store.Add(ctx, name, pair); err != nil {
 					panic(err)
 				}
