@@ -1,0 +1,9 @@
+language: go
+
+go:
+  - tip
+
+install:
+  - go get ./rulesys
+  - go install ./rulesys
+  - go test -v ./...
