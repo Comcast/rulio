@@ -244,6 +244,21 @@ curl -s "$ENDPOINT/api/loc/admin/stats?location=$LOCATION" | python -mjson.tool
 curl -s "$ENDPOINT/api/sys/stats" | python -mjson.tool
 ```
 
+### APIs
+
+The engine is designed in packages.  The core is in
+[`core/`](https://godoc.org/github.com/Comcast/rulio/core), and
+[`sys/`](https://godoc.org/github.com/Comcast/rulio/sys) provides
+something like a container for locations.
+
+The network API used above and provided by `service/` is rendered in
+HTTP, but it was originally designed for message-oriented transports.
+For example, all requests are handled by `service.ProcessRequest()`,
+which is (mostly) independent of transport.
+
+Persistence is mostly pluggable.  See `storage/` for examples.
+
+
 ## Conclusion
 
 Take a look at the `doc/Manual.md` for more infomation.
