@@ -67,9 +67,6 @@ func AddHooks(ctx *core.Context, cronner Cronner, state core.State) error {
 			return errors.New("no cron available")
 		}
 
-		if ctx.Location == nil {
-			return errors.New("no location in ctx")
-		}
 		location := ctx.Location().Name
 
 		core.Log(core.INFO|CRON, ctx, "addHook", "id", id, "location", location, "schedule", schedule)
