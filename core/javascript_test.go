@@ -18,6 +18,8 @@ package core
 
 import (
 	"fmt"
+	"net/http"
+	"net/http/httptest"
 	"testing"
 )
 
@@ -281,4 +283,33 @@ func TestJavascriptAppUpdate(t *testing.T) {
 	if s, ok := got.(string); !ok || s != "Dynamite" {
 		t.Fatalf("didn't expect %#v", got)
 	}
+}
+
+func TestJavascriptHttpx(t *testing.T) {
+	faceUp := "Can't seem to face up to the facts"
+	// I'm tense and nervous; can't relax.
+	handler := func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte(faceUp))
+		// I can't sleep 'cause my bed's on fire.
+		// Don't touch me; I'm a real live wire.
+	}
+	server := httptest.NewServer(http.HandlerFunc(handler))
+	defer server.Close()
+
+	code := fmt.Sprintf(`Env.httpx({URI: "%s/foo"}).Body`, server.URL)
+	bs := make(Bindings)
+	x, err := RunJavascript(nil, &bs, nil, code)
+	if err != nil {
+		t.Error(err)
+	}
+
+	s, is := x.(string)
+	if !is {
+		t.Fatalf("%#v isn't a %T", x, s)
+	}
+
+	if s != faceUp {
+		t.Fatal("'%s' != '%s'", s, faceUp)
+	}
+
 }

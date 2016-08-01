@@ -383,6 +383,50 @@ func jsFun_http(ctx *Context, runtime *otto.Otto, env map[string]interface{}) fu
 	}
 }
 
+func jsFun_httpx(ctx *Context, runtime *otto.Otto, env map[string]interface{}) func(call otto.FunctionCall) otto.Value {
+	return func(call otto.FunctionCall) otto.Value {
+
+		// Args: request
+
+		timer := NewTimer(ctx, "jsFun_httpx")
+		defer timer.Stop()
+
+		spec, err := call.Argument(0).Export()
+		if err != nil {
+			throwJavascript(call.Otto.Call("new Error", nil, err.Error()))
+		}
+		if spec == nil {
+			throwJavascript(call.Otto.Call("new Error", nil, "no spec arg"))
+		}
+
+		// Shameful
+		js, err := json.Marshal(&spec)
+		if err != nil {
+			throwJavascript(call.Otto.Call("new Error", nil, err.Error()))
+		}
+		Log(DEBUG, ctx, "jsFun_httpx", "spec", string(js))
+
+		var request HTTPRequest
+		request.Method = "GET"
+		request.ContentType = "application/json"
+		if err = json.Unmarshal(js, &request); err != nil {
+			throwJavascript(call.Otto.Call("new Error", nil, err.Error()))
+		}
+
+		var result HTTPResult
+		if err = request.DoOnce(ctx, &result); err != nil {
+			throwJavascript(call.Otto.Call("new Error", nil, err.Error()))
+		}
+
+		v, err := runtime.ToValue(&result)
+		if err != nil {
+			throwJavascript(call.Otto.Call("new Error", nil, err.Error()))
+		}
+		return v
+	}
+
+}
+
 type CommandSpec struct {
 	Path    string            `json:"path"`
 	Args    []string          `json:"args"`
@@ -708,6 +752,10 @@ func RunJavascript(ctx *Context, bs *Bindings, props map[string]interface{}, src
 	// HTTP anything
 	// method, url, body
 	env["http"] = jsFun_http(ctx, runtime, env)
+
+	// HTTP anything, but from a HTTPRequest given as first
+	// argument.  Returns full HTTPResponse.
+	env["httpx"] = jsFun_httpx(ctx, runtime, env)
 
 	//
 	env["getJavascriptTestValue"] = func(call otto.FunctionCall) otto.Value {
