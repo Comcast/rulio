@@ -234,6 +234,10 @@ curl -d 'event={"drinks":"milk"}' "$ENDPOINT/api/loc/events/ingest?location=$LOC
 That event should generate a request to the example action executor,
 which doesn't actually do anything.
 
+You can also write your own _action interpreters_.  For example, you
+could write an interpreter (shim) for Bash script actions and really
+cause some trouble.
+
 
 ### Getting some statistics
 
