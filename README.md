@@ -16,6 +16,8 @@ limitations under the License.
 
 End Copyright -->
 
+[![Build Status](https://travis-ci.org/trentontrees/rulio.svg)](https://travis-ci.org/trentontrees/rulio)
+
 
 ![Rulio is a rules engine](https://raw.githubusercontent.com/Comcast/rulio/master/doc/Rulio_logo_400x124.png)
 
