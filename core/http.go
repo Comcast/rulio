@@ -79,14 +79,14 @@ func getHTTPBreaker(ctx *Context, uri string) *OutboundBreaker {
 type HTTPClientSpec struct {
 	// Client-level options
 
-	Timeout            Duration
-	InsecureSkipVerify bool
+	Timeout            Duration `json:"timeout,omitempty"`
+	InsecureSkipVerify bool     `json:"insecureSkipVerify,omitempty"`
 
 	// Transport-level options
 
-	DisableKeepAlives     bool
-	ResponseHeaderTimeout Duration
-	MaxIdleConnsPerHost   int
+	DisableKeepAlives     bool     `json:"disableKeepAlives,omitempty"`
+	ResponseHeaderTimeout Duration `json:"responseHeaderTimeout,omitempty"`
+	MaxIdleConnsPerHost   int      `json:"maxIdleConnsPerHost,omitempty"`
 }
 
 // DefaultHTTPClientSpec generates HTTPClientSpec based on defaults
@@ -122,25 +122,27 @@ func (cs *HTTPClientSpec) Client() (*http.Client, error) {
 // We no longer do/control retries here.
 type HTTPRequest struct {
 	// Method is the HTTP request method (e.g., "POST").
-	Method string
+	Method string `json:"method,omitempty"`
 
 	// URI is what you expect.
-	URI string
+	URI string `json:"uri"`
 
 	// Values to be add to Header for the request
-	Headers map[string]string
+	//
+	// ToDo: Probably support proper []string values.
+	Headers map[string]string `json:"headers,omitempty"`
 
 	// Body is the request body.
-	Body string
+	Body string `json:"body,omitempty"`
 
 	// ContentType is what you expect.
-	ContentType string
+	ContentType string `json:"contentType,omitempty"`
 
 	// Env (if given) provides and receives cookies.
-	Env map[string]interface{}
+	Env map[string]interface{} `json:"env,omitempty"`
 
 	// ClientSpec controls lower-level aspects of the HTTP request.
-	ClientSpec *HTTPClientSpec
+	ClientSpec *HTTPClientSpec `json:"client,omitempty"`
 }
 
 // NewHTTPRequest generates a basic HTTPRequest using some defaults

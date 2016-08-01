@@ -433,11 +433,23 @@ Some of the properties of `Env`:
    that the value of the last expression is also returned in the
    `values` array.
 
-9. `http(method, uri, body)`: A function to get data via HTTP.
+9. `http(method, uri, body)`: A basic function to get data via HTTP.
    `Method` should be `"GET"` or `"POST"`.  When `POST`ing, the `body`
    is the content posted to the URL.  Note that the result is not
-   parsed.  If the result is JSON, call `JSON.parse()` on it.  It 
+   parsed.  If the result is JSON, call `JSON.parse()` on it.  It
    supports cookies within the same rule.
+   
+9. `httpx(request)`: A better (?) function to get data via HTTP.  The
+   argument is a specification for the request.  Properties: `method`
+   (probably either `"GET"` or `"POST"`, `uri`, `headers` (currently
+   only supporting single values), `body` (a string), `contentType`
+   (defaults to `application/json`), and `clientSpec` (an optional
+   object with `timeout`, `insecureSkeipVerify`, and
+   `responseHeaderTimeout` properties).  All are optional except for
+   `uri`.
+   
+    The response is an object with a `status` (an int) and a `body` (a
+    string).
    
 10. `match(pattern,fact)`: Call pattern [matching](#matching).  Both
    arguments are Javascript objects (not strings).  Returns an array
