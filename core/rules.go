@@ -136,15 +136,14 @@ func (r *CleanRule) UnmarshalJSON(bs []byte) error {
 	return nil
 }
 
-func (r *CleanRule) MarshalJSON(bs []byte) error {
+func (r *CleanRule) MarshalJSON() ([]byte, error) {
 	x := (*Rule)(r)
 	x.Action = nil
 	buf, err := json.Marshal(&x)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	copy(bs, buf)
-	return nil
+	return buf, nil
 }
 
 // RuleToJSON generates a Rule from the given JSON representation.
