@@ -62,9 +62,6 @@ Now let's use that engine.  In these examples, we'll talk to the
 engine using is primitive HTTP API.
 
 ```Shell
-# Get this handy tool.
-if [ ! -x bin/jq ]; then (cd bin && wget -nc http://stedolan.github.io/jq/download/linux64/jq && chmod 755 jq); fi
-
 # Write a fact.
 curl -s -d 'fact={"have":"tacos"}' "$ENDPOINT/api/loc/facts/add?location=$LOCATION"
 

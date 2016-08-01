@@ -22,6 +22,10 @@
 ENDPOINT=${ENDPOINT:-http://localhost:8001}
 LOCATION=${LOCATION:-here}
 
+# We'll use 'jq'
+JQ=$((type -a jq | echo "jq is bin/jq") | cut -d ' ' -f 3)
+if [ ! -x $JQ ]; then (cd bin && wget -nc http://stedolan.github.io/jq/download/linux64/jq && chmod 755 jq); fi
+
 curl "$ENDPOINT/loc/admin/clear?location=$LOCATION"
 
 # Write a rule that keeps track of a sliding window of counts of
@@ -57,7 +61,7 @@ EOF
 
 # Generate some events with increasing timestamps.
 for M in $(seq 0 5); do
-    cat <<EOF | curl -s -d "@-" $ENDPOINT/api/loc/events/ingest | tee ingest.js | jq -c .result.values
+    cat <<EOF | curl -s -d "@-" $ENDPOINT/api/loc/events/ingest | tee ingest.js | $JQ -c .result.values
 {"location":"$LOCATION", "event":{"event":"broken","max":3, "ts":"2015-08-10T13:55:0$M-05:00"}}
 EOF
 done
@@ -65,7 +69,7 @@ done
 # Generate some events with increasing timestamps a little later than
 # the last batch.
 for M in $(seq 0 5); do
-    cat <<EOF | curl -d -d "@-" $ENDPOINT/api/loc/events/ingest | jq -c .result.values
+    cat <<EOF | curl -d -d "@-" $ENDPOINT/api/loc/events/ingest | $JQ -c .result.values
 {"location":"$LOCATION", "event":{"event":"broken","max":3, "ts":"2015-08-10T13:55:1$M-05:00"}}
 EOF
 done
