@@ -59,7 +59,7 @@ If you see some JSON, the engine is probably running.  Check
 ### A simple rule
 
 Now let's use that engine.  In these examples, we'll talk to the
-engine using is primitive HTTP API.
+engine using its primitive HTTP API.
 
 ```Shell
 # Write a fact.
