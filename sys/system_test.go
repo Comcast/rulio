@@ -410,7 +410,7 @@ func benchmarkSystemSimple(b *testing.B, checking bool, unindexed bool) {
 	sys.AddFact(ctx, location, "", `{"wants":"tacos"}`)
 	sys.AddFact(ctx, location, "", `{"wants":"tacos"}`)
 	for i := 0; i < 50; i++ {
-		sys.AddFact(ctx, location, "", fmt.Sprintf(`{"ignore_%d":"this_%d"}`, i))
+		sys.AddFact(ctx, location, "", fmt.Sprintf(`{"ignore_%d":"this_%d"}`, i, i))
 	}
 
 	sys.AddRule(ctx, location, "", `
@@ -556,7 +556,9 @@ func TestBadStatelessWithExternalCron(t *testing.T) {
 	cont.LocationTTL = Forever
 	conf := ExampleConfig()
 	cr, _ := cron.NewCron(nil, time.Second, "intcron", 1000000)
-	ic := &cron.InternalCron{cr}
+	ic := &cron.InternalCron{
+		Cron: cr,
+	}
 
 	sys, err := NewSystem(ctx, *conf, *cont, ic)
 	if err != nil {
