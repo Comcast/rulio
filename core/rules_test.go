@@ -63,7 +63,7 @@ func RuleTest(ctx *Context, location string, rule string, facts []string, events
 	return nil
 }
 
-func ExampleRuleTest1() {
+func ExampleLocation_ProcessEvent_basic() {
 	previous := SystemParameters.IdInjectionTime
 	SystemParameters.IdInjectionTime = InjectIdNever
 	// Will cause much confusion and trouble with concurrent testing.
@@ -137,7 +137,7 @@ func chanGet(c chan interface{}, wait time.Duration, t *testing.T) (interface{},
 	return nil, nil
 }
 
-func ExampleRuleTest2() {
+func ExampleLocation_ProcessEvent_out() {
 	previous := SystemParameters.IdInjectionTime
 	SystemParameters.IdInjectionTime = InjectIdNever
 	// Will cause much confusion and trouble with concurrent testing.

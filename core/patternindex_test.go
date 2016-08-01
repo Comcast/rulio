@@ -466,10 +466,10 @@ func piExample(ctx *Context, i *PatternIndex, js string, id string) {
 // 	// [p1 p3]
 // }
 
-// ExamplePatternIndexDoc will generate some documentation for examples.
+// TestPatternIndexDoc will generate some documentation for examples.
 //
-// See it: 'go test -test.run=PatternStoreDoc'
-func ExamplePatternIndexDoc() {
+// See it: 'go test -test.run=PatternIndexDoc'
+func TestPatternIndexDoc() {
 	ctx := TestContext("ExamplePatternIndexDoc")
 
 	i := NewPatternIndex()
