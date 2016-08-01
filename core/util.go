@@ -550,6 +550,14 @@ func ParseMap(js string) (m Map, err error) {
 	return m, nil
 }
 
+func MustMap(js string) Map {
+	m, err := ParseMap(js)
+	if err != nil {
+		panic(err)
+	}
+	return m
+}
+
 func (m Map) JSON() (string, error) {
 	bs, err := json.Marshal(&m)
 	if err != nil {

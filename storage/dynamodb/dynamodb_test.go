@@ -18,14 +18,26 @@ package dynamodb
 
 import (
 	"fmt"
-	"github.com/AdRoll/goamz/dynamodb"
-	core "github.com/Comcast/rulio/core"
 	"log"
+	"strings"
 	"testing"
 	"time"
+
+	core "github.com/Comcast/rulio/core"
+
+	"github.com/AdRoll/goamz/dynamodb"
 )
 
 var testConfig = DynamoDBConfig{"local", DefaultTableName, DefaultConsistent}
+
+func noConnection(err error) bool {
+	// Sigh
+	maybe := strings.Contains(err.Error(), "connection refused")
+	if maybe {
+		log.Printf("no DynamoDB connection (maybe run mock DynamoDB?)")
+	}
+	return maybe
+}
 
 func TestParseConfig(t *testing.T) {
 	{
@@ -89,6 +101,10 @@ func TestDynamoBasic(t *testing.T) {
 	ctx := core.NewContext("test")
 
 	ddb, err := NewStorage(ctx, testConfig)
+	if noConnection(err) {
+		t.Skip()
+	}
+
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -146,6 +162,9 @@ func TestDynamoFacts(t *testing.T) {
 	ctx := core.NewContext("test")
 
 	store, err := NewStorage(ctx, testConfig)
+	if noConnection(err) {
+		t.Skip()
+	}
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -160,7 +179,7 @@ func TestDynamoFacts(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	sr, err := loc.SearchFacts(ctx, `{"likes":"?x"}`)
+	sr, err := loc.SearchFacts(ctx, core.MustMap(`{"likes":"?x"}`), false)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -168,22 +187,22 @@ func TestDynamoFacts(t *testing.T) {
 
 	loc.Clear(ctx)
 
-	id, err := loc.AddFact(ctx, `{"likes":"chips"}`, "")
+	id, err := loc.AddFact(ctx, "", core.MustMap(`{"likes":"chips"}`))
 	log.Printf("# AddFact %s %v\n", id, err)
-	id, err = loc.AddFact(ctx, `{"likes":"beer"}`, "")
+	id, err = loc.AddFact(ctx, "", core.MustMap(`{"likes":"beer"}`))
 	log.Printf("# AddFact %s %v\n", id, err)
-	id, err = loc.AddFact(ctx, `{"wants":"tacos"}`, "")
+	id, err = loc.AddFact(ctx, "", core.MustMap(`{"wants":"tacos"}`))
 	log.Printf("# AddFact %s %v\n", id, err)
-	id, err = loc.AddFact(ctx, `{"wants":"tacos"}`, "")
+	id, err = loc.AddFact(ctx, "", core.MustMap(`{"wants":"tacos"}`))
 	log.Printf("# AddFact %s %v\n", id, err)
 
-	sr, err = loc.SearchFacts(ctx, `{"wants":"?x"}`)
+	sr, err = loc.SearchFacts(ctx, core.MustMap(`{"wants":"?x"}`), false)
 	log.Printf("# SearchFacts 1 %v %v\n", *sr, err)
 
 	id, err = loc.RemFact(ctx, id)
 	log.Printf("# RemFact %v %v\n", id, err)
 
-	sr, err = loc.SearchFacts(ctx, `{"wants":"?x"}`)
+	sr, err = loc.SearchFacts(ctx, core.MustMap(`{"wants":"?x"}`), false)
 	log.Printf("# SearchFacts 2 %v %v\n", *sr, err)
 }
 
@@ -193,6 +212,9 @@ func TestDynamoThroughput(t *testing.T) {
 
 	ctx := core.NewContext(location)
 	store, err := NewStorage(ctx, testConfig)
+	if noConnection(err) {
+		t.Skip()
+	}
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -212,7 +234,7 @@ func TestDynamoThroughput(t *testing.T) {
 	then := time.Now().UTC().UnixNano()
 	for i := 0; i < n; i++ {
 		fact := fmt.Sprintf(`{"likes":"beer %d"}`, i)
-		_, err := loc.AddFact(ctx, "", fact)
+		_, err := loc.AddFact(ctx, "", core.MustMap(fact))
 		if err != nil {
 			// ProvisionedThroughputExceededException: The
 			// level of configured provisioned throughput
@@ -227,7 +249,7 @@ func TestDynamoThroughput(t *testing.T) {
 	log.Printf("elapsed %d us", elapsed/1000)
 
 	then = time.Now().UTC().UnixNano()
-	sr, err := loc.SearchFacts(ctx, `{"likes":"?x"}`)
+	sr, err := loc.SearchFacts(ctx, core.MustMap(`{"likes":"?x"}`), false)
 	if err != nil {
 		log.Fatal(err)
 	}
