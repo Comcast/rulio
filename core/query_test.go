@@ -296,10 +296,10 @@ func TestLocationsFromMapGood(t *testing.T) {
 		t.Fatalf("shouldn't have reported error %v", err)
 	}
 	if len(there) != 1 {
-		t.Fatal("why in the world did we get %#v", there)
+		t.Fatalf("why in the world did we get %#v", there)
 	}
 	if there[0] != "there" {
-		t.Fatal("why in the world did we not get 'there'?")
+		t.Fatalf("why in the world did we not get 'there'?")
 	}
 }
 
@@ -311,7 +311,7 @@ func TestLocationsFromMapMultiple(t *testing.T) {
 		t.Fatalf("shouldn't have reported error %v", err)
 	}
 	if len(there) != 3 {
-		t.Fatal("why in the world did we get %#v", there)
+		t.Fatalf("why in the world did we get %#v", there)
 	}
 }
 

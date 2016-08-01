@@ -309,7 +309,7 @@ func TestJavascriptHttpx(t *testing.T) {
 	}
 
 	if s != faceUp {
-		t.Fatal("'%s' != '%s'", s, faceUp)
+		t.Fatalf("'%s' != '%s'", s, faceUp)
 	}
 
 }

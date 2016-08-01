@@ -73,7 +73,7 @@ func TestSubstituteBindingsUnbound(t *testing.T) {
 	ctx := TestContext("Test")
 	loc, err := NewLocation(ctx, "test", nil, nil)
 	if err != nil {
-		t.Fatal()
+		t.Fatal(err)
 	}
 	ctl := &Control{
 		UseDefaultVariableValue: true,
