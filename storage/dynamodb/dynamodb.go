@@ -343,8 +343,8 @@ func dynamodbTableDescription(name string) *dynamodb.TableDescriptionT {
 		},
 		KeySchema: []dynamodb.KeySchemaT{
 			dynamodb.KeySchemaT{
-				AttributeNam: "id",
-				KeyType:      "HASH",
+				AttributeName: "id",
+				KeyType:       "HASH",
 			},
 		},
 		ProvisionedThroughput: dynamodb.ProvisionedThroughputT{
