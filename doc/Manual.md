@@ -390,7 +390,6 @@ location, and the matching rule id respectively.
 Then the Javascript variable `liked` will be bound (per action
 invocation).
 
-
 In addition, `Env` is bound to a Javascript object that has several
 function definitions and other data.  You can check what's there with
 
@@ -503,6 +502,16 @@ In addition, this environment includes the primary location APIs:
 
 An engine can extend this environment (using `CodeProps` in
 `core.Control`).
+
+A Javascript action supports an optional `libraries` property, which
+should have a value (if any) that's an array of strings.  Each string
+should typically be a URL that will fetch Javascript.  (Results are
+cached with a TTL given by `core.SystemParameters.SlurpCacheTTL`,
+which defaults to 0s.  Also see `SlurpCacheSize` and `SlurpTimeout`.)
+Alternately, the string can be a name that resolves to a URL via a
+location's `GetConfig().Libraries` map.  See "Javascript libraries" in
+the top-level README for an example use.  Also the `examples/` use a
+library or two.
 
 A System can control a locations' `JavascriptTimeout`.  See
 `Location.Control`, `System.SystemApp.DefaultLocControl` and
