@@ -505,11 +505,12 @@ In addition, this environment includes the primary location APIs:
 An engine can extend this environment (using `CodeProps` in
 `core.Control`).
 
-A Javascript action supports an optional `libraries` property, which
-should have a value (if any) that's an array of strings.  Each string
-should typically be a URL that will fetch Javascript.  (Results are
-cached with a TTL given by `core.SystemParameters.SlurpCacheTTL`,
-which defaults to 0s.  Also see `SlurpCacheSize` and `SlurpTimeout`.)
+A Javascript action supports an optional `libraries` property on a
+optional `opts` property.  The `libraries` property, if given, should
+have a value (if any) that's an array of strings.  Each string should
+typically be a URL that will fetch Javascript.  (Results are cached
+with a TTL given by `core.SystemParameters.SlurpCacheTTL`, which
+defaults to 0s.  Also see `SlurpCacheSize` and `SlurpTimeout`.)
 Alternately, the string can be a name that resolves to a URL via a
 location's `GetConfig().Libraries` map.  See "Javascript libraries" in
 the top-level README for an example use.  Also the `examples/` use a

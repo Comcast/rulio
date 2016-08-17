@@ -178,12 +178,15 @@ Let's use a library of Javascript code in a rule action.
 # Check that we can get a library.
 curl http://localhost:6669/libs/tester.js
 
+curl "$ENDPOINT/api/loc/admin/clear?location=$LOCATION"
+
 # Write the rule.
 cat <<EOF | curl -d "@-" "$ENDPOINT/api/loc/rules/add?location=$LOCATION"
 {"rule": {"when":{"pattern":{"wants":"?x"}},
           "condition":{"code":"isGood(x)",
                        "libraries":["http://localhost:6669/libs/tester.js"]},
-          "action":{"code":"var msg = \"Serve \" + x; console.log(msg); msg;"}}}
+          "action":{"code":"var msg = 'Serve ' + x + ' ('+ isGood(x) + ')'; console.log(msg); msg;",
+                    "opts":{"libraries":["http://localhost:6669/libs/tester.js"]}}}}
 EOF
 
 # Send an event.  Should trigger that action.
