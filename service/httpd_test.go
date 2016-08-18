@@ -67,7 +67,7 @@ func TestHTTP(t *testing.T) {
 		}
 		buf := bytes.NewBufferString(body)
 
-		resp, err := http.Post("http://"+port+uri, "application/json", buf)
+		resp, err := http.Post("http://"+port+"/"+uri, "application/json", buf)
 		if err != nil {
 			t.Fatal(err)
 		}
