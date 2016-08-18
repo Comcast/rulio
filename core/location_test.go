@@ -214,6 +214,7 @@ func TestLocationAddParentRule(t *testing.T) {
 
 func TestBindingsWarningLimit(t *testing.T) {
 	ctx, loc := TestingLocation(t)
+	ctx.Verbosity = EVERYTHING
 	limit := 5
 	loc.Control().BindingsWarningLimit = limit
 
