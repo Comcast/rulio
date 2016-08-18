@@ -64,6 +64,8 @@ import (
 	"github.com/robertkrimen/otto"
 )
 
+var DefaultVerbosity = ANYWARN
+
 const (
 	// The log record property given to the first string arg to
 	// Log().
@@ -372,7 +374,7 @@ func defaultLogFields(n LogLevel) LogLevel {
 // override.
 func getVerbosity(ctx *Context) LogLevel {
 	// ctx.GetLoc().Control.Verbosity overrides ctx.Verbosity
-	verbosity := EVERYTHING
+	verbosity := DefaultVerbosity
 
 	if ctx != nil {
 		verbosity = ctx.Verbosity

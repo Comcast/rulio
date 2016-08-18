@@ -163,7 +163,7 @@ func (d *Duration) UnmarshalJSON(data []byte) error {
 // ToDo: Move to SystemParameters
 func (c *Control) Defaults() *Control {
 	c.NoTiming = false // Implied.
-	c.Verbosity = EVERYTHING
+	c.Verbosity = DefaultVerbosity
 	c.CheckForFactExpiration = true
 	c.MaxFacts = 1000
 	c.BindingsWarningLimit = 20

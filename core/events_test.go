@@ -26,7 +26,6 @@ import (
 
 func TestEventBasic(t *testing.T) {
 	ctx, loc := TestingLocation(t)
-	ctx.Verbosity = EVERYTHING
 	c := make(chan interface{})
 	ctx.AddValue("out", c)
 
@@ -71,7 +70,6 @@ func TestEventBasic(t *testing.T) {
 
 func TestEventTriggered(t *testing.T) {
 	ctx, loc := TestingLocation(t)
-	ctx.Verbosity = EVERYTHING
 	c := make(chan interface{})
 	ctx.AddValue("out", c)
 
@@ -117,7 +115,6 @@ func TestEventTriggered(t *testing.T) {
 
 func TestEventEmbedded(t *testing.T) {
 	ctx, loc := TestingLocation(t)
-	ctx.Verbosity = EVERYTHING
 	c := make(chan interface{})
 	ctx.AddValue("out", c)
 
@@ -157,7 +154,6 @@ func TestEventEmbedded(t *testing.T) {
 
 func TestEventWithAppBinding(t *testing.T) {
 	ctx, loc := TestingLocation(t)
-	ctx.Verbosity = EVERYTHING
 	ctx.App = &BindingApp{
 		map[string]interface{}{
 			"brand": "Duff",
@@ -234,7 +230,6 @@ func (ba *BindingApp) UpdateJavascriptRuntime(ctx *Context, runtime *otto.Otto) 
 
 func TestEventConditionBindings(t *testing.T) {
 	ctx, loc := TestingLocation(t)
-	ctx.Verbosity = EVERYTHING
 	c := make(chan interface{})
 	ctx.AddValue("out", c)
 

@@ -175,7 +175,7 @@ func (ctx *Context) init() *Context {
 
 func newContext(appId string) *Context {
 	ctx := &Context{RWMutex: sync.RWMutex{},
-		Verbosity:           EVERYTHING,
+		Verbosity:           DefaultVerbosity,
 		ReadKey:             "",
 		WriteKey:            "",
 		LogAccumulator:      nil,

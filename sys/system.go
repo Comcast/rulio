@@ -519,7 +519,7 @@ func SystemForTest(name string) (*System, *Context) {
 	return SimpleSystem(ctx), ctx
 }
 
-// SimpleSystem ia a basic system with 'FOREVER' TTL and 'EVERYTHING' Verbosity.
+// SimpleSystem ia a basic system with 'FOREVER' TTL and 'DefaultVerbosity' Verbosity.
 func SimpleSystem(ctx *Context) *System {
 	conf := ExampleConfig()
 	cont := ExampleSystemControl()
@@ -531,7 +531,7 @@ func SimpleSystem(ctx *Context) *System {
 
 	locCtl := &Control{
 		MaxFacts:  1000,
-		Verbosity: EVERYTHING,
+		Verbosity: DefaultVerbosity,
 	}
 	cont.DefaultLocControl = locCtl
 

@@ -226,7 +226,6 @@ func TestBindingsWarningLimit(t *testing.T) {
 
 	ctx.LogAccumulator = NewAccumulator(10000)
 	ctx.LogAccumulatorLevel = EVERYTHING
-	ctx.Verbosity = EVERYTHING
 
 	_, err := loc.SearchFacts(ctx, mapJS(`{"likes":"?x"}`), true)
 

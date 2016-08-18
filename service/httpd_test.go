@@ -35,6 +35,7 @@ func TestHTTP(t *testing.T) {
 	service := &Service{
 		System: sys,
 	}
+
 	server, err := NewHTTPService(ctx, service)
 	if err != nil {
 		t.Fatal(err)
