@@ -18,20 +18,25 @@ package service
 
 import (
 	"bufio"
+	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
+	"log"
 	"net"
 	"net/http"
 	"net/url"
+	"reflect"
 	"strconv"
 	"sync"
 	"sync/atomic"
 	"time"
 
 	"github.com/Comcast/rulio/core"
+
+	"gopkg.in/yaml.v2"
 )
 
 var BeGraceful = true // Parameter
@@ -210,6 +215,68 @@ var parameterTypes = map[string]string{
 	"limit":   "int",
 }
 
+var UnknownSyntax = errors.New("unknown syntax")
+
+func MaybeYAML(bs []byte) bool {
+	log.Printf("MaybeYAML '%s'", bs)
+	newline := bytes.Index(bs, []byte("\n"))
+	return 0 <= newline && newline < len(bs)
+}
+
+// StringMaps tries to makes (recursively) a map[string]interface{}
+// from a map[interface{}]interface{} (which yaml.Unmarshal tends to
+// provide).  When something goes wrong, the original value is
+// returned.
+func StringMaps(x interface{}) interface{} {
+	switch vv := x.(type) {
+	case []interface{}:
+		for i, x := range vv {
+			vv[i] = StringMaps(x)
+		}
+		return vv
+	case map[string]interface{}:
+		for k, v := range vv {
+			vv[k] = StringMaps(v)
+		}
+		return vv
+	case map[interface{}]interface{}:
+		m := make(map[string]interface{}, len(vv))
+		for k, v := range vv {
+			s, is := k.(string)
+			if !is {
+				return x
+			}
+			m[s] = StringMaps(v)
+		}
+		return m
+	default:
+		return x
+	}
+}
+
+func UnmarshalYAML(bs []byte, v interface{}) error {
+	v = reflect.Indirect(reflect.ValueOf(v)).Interface()
+	err := yaml.Unmarshal(bs, v)
+	if err == nil {
+		v = StringMaps(v)
+	}
+	return err
+}
+
+func Unmarshal(bs []byte, v interface{}) error {
+	if bs[0] == '{' {
+		return json.Unmarshal(bs, v)
+	}
+
+	// Do we have at least one newline?
+
+	if MaybeYAML(bs) {
+		return UnmarshalYAML(bs, v)
+	}
+
+	return UnknownSyntax
+}
+
 func parseParameter(p, v string) (interface{}, error) {
 	typ, custom := parameterTypes[p]
 	if !custom {
@@ -218,7 +285,7 @@ func parseParameter(p, v string) (interface{}, error) {
 	switch typ {
 	case "json":
 		m := make(map[string]interface{})
-		err := json.Unmarshal([]byte(v), &m)
+		err := Unmarshal([]byte(v), &m)
 		return m, err
 	case "int":
 		return strconv.ParseInt(v, 10, 32)
@@ -258,7 +325,7 @@ func GetHTTPRequest(ctx *core.Context, r *http.Request) (map[string]interface{},
 
 	var err error
 	switch uri {
-	case "/api/json":
+	case "/api/json", "/api/yaml":
 		var err error
 		switch r.Method {
 		case "POST":
@@ -266,8 +333,15 @@ func GetHTTPRequest(ctx *core.Context, r *http.Request) (map[string]interface{},
 			if js, err = ioutil.ReadAll(r.Body); err != nil {
 				return nil, err
 			}
-			if err = json.Unmarshal(js, &m); err != nil {
-				return nil, err
+			switch uri {
+			case "/api/json":
+				if err = json.Unmarshal(js, &m); err != nil {
+					return nil, err
+				}
+			case "/api/yaml":
+				if err = UnmarshalYAML(js, &m); err != nil {
+					return nil, err
+				}
 			}
 			given, have := m["uri"]
 			if !have {
@@ -295,6 +369,10 @@ func GetHTTPRequest(ctx *core.Context, r *http.Request) (map[string]interface{},
 			if js[0] == '{' {
 				// If the body looks like JSON, treat it as JSON.
 				if err = json.Unmarshal(js, &m); err != nil {
+					return nil, err
+				}
+			} else if MaybeYAML(js) {
+				if err = UnmarshalYAML(js, &m); err != nil {
 					return nil, err
 				}
 			} else {
