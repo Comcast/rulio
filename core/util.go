@@ -570,3 +570,29 @@ func Who(skip int) string {
 	_, file, line, ok := runtime.Caller(skip)
 	return fmt.Sprintf("who %s %d %v", file, line, ok)
 }
+
+// Copy mostly provides a deep copy of maps.
+func Copy(x interface{}) interface{} {
+	switch vv := x.(type) {
+	case Map:
+		acc := make(Map, len(vv))
+		for k, v := range vv {
+			acc[k] = Copy(v)
+		}
+		return acc
+	case map[string]interface{}:
+		acc := make(map[string]interface{}, len(vv))
+		for k, v := range vv {
+			acc[k] = Copy(v)
+		}
+		return acc
+	case map[interface{}]interface{}:
+		acc := make(map[interface{}]interface{}, len(vv))
+		for k, v := range vv {
+			acc[k] = Copy(v)
+		}
+		return acc
+	default:
+		return x
+	}
+}

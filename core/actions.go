@@ -202,6 +202,26 @@ func dropQuestionMarks(bindings map[string]interface{}) map[string]interface{} {
 	return m
 }
 
+// maybeCopyEvent will make a copy of the binding for "?event" if
+// SystemParameters.CopyEvent says so.
+//
+// See issue #20.
+//
+// Watch out for concurrent access to the given bindings (as usual).
+func maybeCopyEvent(bs Bindings) {
+	if SystemParameters.CopyEvents {
+		if event, have := bs["?event"]; have {
+			// Maybe this event is the real even, or maybe it's
+			// just a regular binding.  We can't tell at this
+			// point.
+			bs["?event"] = Copy(event)
+		}
+	}
+	// To refrain from imitation is the best revenge.
+	//
+	// -- Marcus Aurelius
+}
+
 func (loc *Location) ExecAction(ctx *Context, bs Bindings, a Action) (interface{}, error) {
 
 	Log(INFO, ctx, "core.ExecAction", "action", a)
@@ -211,6 +231,8 @@ func (loc *Location) ExecAction(ctx *Context, bs Bindings, a Action) (interface{
 	if nil != err {
 		return nil, err
 	}
+
+	maybeCopyEvent(bs)
 
 	timer := NewTimer(ctx, "ExecAction")
 	x, err := f()

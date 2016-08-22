@@ -136,6 +136,10 @@ type Parameters struct {
 
 	// HTTPRetryOn
 	HTTPRetryOn StringSet
+
+	// CopyEvents will copy the binding for "?event" before giving
+	// that data to condition javascript or a javascript action.
+	CopyEvents bool
 }
 
 // Copy makes a shallow (except for DefaultControl) copy.
@@ -181,6 +185,7 @@ func DefaultParameters() *Parameters {
 	ps.ResponseHeaderTimeout = 20 * time.Second
 	ps.HTTPRetryInterval = 20 * time.Second
 	ps.HTTPRetryOn = defaultRetryOn
+	ps.CopyEvents = true
 	return &ps
 }
 
@@ -211,6 +216,7 @@ func TightParameters() *Parameters {
 	ps.ResponseHeaderTimeout = 20 * time.Second
 	ps.HTTPRetryInterval = 20 * time.Second
 	ps.HTTPRetryOn = defaultRetryOn
+	ps.CopyEvents = true
 
 	return &ps
 }

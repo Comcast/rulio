@@ -21,6 +21,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"reflect"
 	"strings"
 	"sync"
 	"testing"
@@ -445,4 +446,26 @@ func TestWho(t *testing.T) {
 	fmt.Println(Who(0))
 	fmt.Println(Who(1))
 	fmt.Println(Who(2))
+}
+
+func TestCopy(t *testing.T) {
+	eq := func(x, y interface{}) {
+		if !reflect.DeepEqual(x, y) {
+			t.Fatalf("%#v != %#v", x, y)
+		}
+	}
+	neq := func(x, y interface{}) {
+		if reflect.DeepEqual(x, y) {
+			t.Fatalf("%#v == %#v", x, y)
+		}
+	}
+	eq(Copy(1), Copy(1))
+	neq(Copy(1), Copy(2))
+
+	x := MustMap(`{"want":{"tacos":42}}`)
+	eq(Copy(x), x)
+	eq(Copy(x), Copy(x))
+	y := Copy(x)
+	x["like"] = "chips"
+	neq(x, y)
 }

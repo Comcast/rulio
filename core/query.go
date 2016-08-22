@@ -216,6 +216,8 @@ func (c CodeQuery) Exec(ctx *Context, loc *Location, qc QueryContext, qr QueryRe
 			}
 		}
 
+		maybeCopyEvent(bs)
+
 		x, err := RunJavascript(ctx, bs.StripQuestionMarks(ctx), props, script)
 		if err != nil {
 			Log(WARN, ctx, "CodeQuery.Exec", "error", err)

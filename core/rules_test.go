@@ -23,6 +23,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
+	"reflect"
 	"strings"
 	"testing"
 	"time"
@@ -604,5 +605,40 @@ func TestRuleWithUnboundVar(t *testing.T) {
 		}
 	case <-timer:
 		// Victory
+	}
+}
+
+func TestRuleEventCopy(t *testing.T) {
+	ctx := NewContext("test")
+	location := "test"
+
+	loc, err := NewLocation(ctx, location, nil, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if err = loc.Clear(ctx); err != nil {
+		t.Fatal(err)
+	}
+
+	rule := `
+{"when": {"pattern": {"likes": "?liked"}},
+ "action": {"code": "event.changed = 1; Env.out(event); true;"}}
+`
+	_, err = loc.AddRule(ctx, "", mapJS(rule))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	event := mapJS(`{"likes": "queso"}`)
+	out := make(chan interface{}, 2)
+	ctx.AddValue("out", out)
+
+	loc.ProcessEvent(ctx, event)
+
+	got := <-out
+
+	if reflect.DeepEqual(event, got) {
+		t.Fatalf("%#v wasn't really copied", event)
 	}
 }
