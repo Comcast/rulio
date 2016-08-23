@@ -506,15 +506,21 @@ An engine can extend this environment (using `CodeProps` in
 `core.Control`).
 
 A Javascript action supports an optional `libraries` property on a
-optional `opts` property.  The `libraries` property, if given, should
-have a value (if any) that's an array of strings.  Each string should
-typically be a URL that will fetch Javascript.  (Results are cached
-with a TTL given by `core.SystemParameters.SlurpCacheTTL`, which
-defaults to 0s.  Also see `SlurpCacheSize` and `SlurpTimeout`.)
-Alternately, the string can be a name that resolves to a URL via a
-location's `GetConfig().Libraries` map.  See "Javascript libraries" in
-the top-level README for an example use.  Also the `examples/` use a
-library or two.
+optional `opts` property, which should have a map as a value.
+
+If the `opts` map has a `libraries` property, that value be an array
+of strings.  Each string should typically be a URL that will fetch
+Javascript.  (Results are cached with a TTL given by
+`core.SystemParameters.SlurpCacheTTL`, which defaults to 0s.  Also see
+`SlurpCacheSize` and `SlurpTimeout`.)  Alternately, the string can be
+a name that resolves to a URL via a location's `GetConfig().Libraries`
+map.  See "Javascript libraries" in the top-level README for an
+example use.  Also the `examples/` use a library or two.
+
+If the `opts` map has an `encoding` property, that encoding specifies
+the encoding used for the action's `code` when the action in an
+in-process Javascript action.  Currently the only supporting encodings
+are "none" and "base64".
 
 A System can control a locations' `JavascriptTimeout`.  See
 `Location.Control`, `System.SystemApp.DefaultLocControl` and

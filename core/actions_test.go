@@ -17,6 +17,7 @@
 package core
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"testing"
@@ -163,6 +164,47 @@ func TestActionInterpreters(t *testing.T) {
 		"otto": oai,
 	}
 	f, err := loc.getActionFunc(ctx, bs, a)
+	if err != nil {
+		t.Fatal(err)
+	}
+	x, err := f()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if n, is := x.(float64); is {
+		if int(n) == want {
+			return
+		}
+	}
+	t.Fatal(fmt.Sprintf("wanted %v but got %#v", want, x))
+}
+
+func TestActionCodeBase64Encoding(t *testing.T) {
+	code := "x+y+3"
+	code = base64.StdEncoding.EncodeToString([]byte(code))
+
+	bs := Bindings(map[string]interface{}{"x": 1, "y": 2})
+	a := Action{
+		Code: code,
+		Opts: map[string]interface{}{
+			"encoding": "base64",
+		},
+		Endpoint: "otto",
+	}
+	want := 1 + 2 + 3
+
+	oai := &OttoActionInterpreter{}
+
+	name := "test"
+	ctx := NewContext(name)
+	store, _ := NewMemStorage(ctx)
+	state, _ := NewIndexedState(ctx, name, store)
+	loc, err := NewLocation(ctx, "test", state, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	f, err := oai.GetThunk(ctx, loc, bs, a)
 	if err != nil {
 		t.Fatal(err)
 	}

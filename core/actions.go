@@ -17,6 +17,7 @@
 package core
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"regexp"
@@ -48,7 +49,51 @@ type Action struct {
 	Opts map[string]interface{} `json:"opts,omitempty"`
 }
 
+// getBoolOpt does about what you'd expect.
+func (a *Action) getBoolOpt(name string, def bool) (bool, error) {
+	x, have := a.Opts[name]
+	if !have {
+		return def, nil
+	}
+	b, is := x.(bool)
+	if !is {
+		return false, fmt.Errorf("option '%s' == %#v isn't a %T", name, x, b)
+	}
+	return b, nil
+}
+
 type CleanAction Action
+
+func DecodeString(encoding, code string) (string, error) {
+	switch encoding {
+	case "base64":
+		decoded, err := base64.StdEncoding.DecodeString(code)
+		if err != nil {
+			return "", err
+		}
+		return string(decoded), nil
+	case "", "none":
+		return encoding, nil
+	default:
+		return "", fmt.Errorf("unsupported encoding '%s'", encoding)
+	}
+}
+
+func (a *Action) GetStringCode() (string, error) {
+	code, err := GetCode(a.Code)
+	if err != nil {
+		return "", err
+	}
+	enc, have := a.Opts["encoding"]
+	if have {
+		encoding, is := enc.(string)
+		if !is {
+			return "", fmt.Errorf("unsupported encoding spec %v#", enc)
+		}
+		return DecodeString(encoding, code)
+	}
+	return code, nil
+}
 
 func (a *CleanAction) UnmarshalJSON(bs []byte) error {
 	x := &Action{}
@@ -59,12 +104,13 @@ func (a *CleanAction) UnmarshalJSON(bs []byte) error {
 	if x.Endpoint == "" {
 		x.Endpoint = "javascript"
 	}
-	var err error
-	if x.Code, err = GetCode(x.Code); err != nil {
+
+	code, err := GetCode(x.Code)
+	if err != nil {
 		return err
 	}
+	a.Code = code
 
-	a.Code = x.Code
 	a.Endpoint = x.Endpoint
 	a.Subvars = x.Subvars
 	a.Opts = x.Opts
@@ -289,7 +335,7 @@ func (i *OttoActionInterpreter) GetThunk(ctx *Context, loc *Location, bs Binding
 				s, ok := lib.(string)
 				if !ok {
 					err := fmt.Errorf("bad library type: %T (%#v)", lib, lib)
-					Log(ERROR|USR, ctx, "core.getActionFunc", "error", err)
+					Log(ERROR|USR, ctx, "core.OttoActionInterpreter.GetThunk", "error", err)
 					return nil, err
 				}
 				acc[i] = s
@@ -297,28 +343,38 @@ func (i *OttoActionInterpreter) GetThunk(ctx *Context, loc *Location, bs Binding
 			libraries = acc
 		default:
 			err := fmt.Errorf("bad 'libraries' type: %T (%#v)", o, o)
-			Log(ERROR|USR, ctx, "core.getActionFunc", "error", err)
+			Log(ERROR|USR, ctx, "core.OttoActionInterpreter.GetThunk", "error", err)
 			return nil, err
 		}
 	}
 
-	script, err := CompileJavascript(ctx, loc, libraries, a.Code.(string))
+	// We become just by performing just actions, temperate by
+	// performing temperate actions, brave by performing brave
+	// actions.
+	//
+	// -- Aristotle, Nicomachean Ethics
+
+	code, err := a.GetStringCode()
+	if err != nil {
+		return nil, err
+	}
+	script, err := CompileJavascript(ctx, loc, libraries, code)
 	if nil != err {
 		return nil, err
 	}
 
 	return func() (interface{}, error) {
-		Log(DEBUG, ctx, "core.getActionFunc.javascript",
+		Log(DEBUG, ctx, "core.OttoActionInterpreter.GetThunk",
 			"action", a, "stage", "start")
 
 		var props map[string]interface{}
 		c := loc.Control()
 		if c != nil && c.CodeProps != nil {
-			Log(DEBUG, ctx, "core.getActionFunc.javascript",
+			Log(DEBUG, ctx, "core.OttoActionInterpreter.GetThunk",
 				"action", a, "CodeProps", c.CodeProps)
 			props = c.CodeProps
 		} else {
-			Log(DEBUG, ctx, "core.getActionFunc.javascript",
+			Log(DEBUG, ctx, "core.OttoActionInterpreter.GetThunk",
 				"action", a, "CodeProps", nil)
 		}
 
@@ -326,10 +382,10 @@ func (i *OttoActionInterpreter) GetThunk(ctx *Context, loc *Location, bs Binding
 		if err != nil {
 			// Don't know if this error is a user error.
 			// Probably a user error.  We'll log both for now.
-			Log(ERROR|USR, ctx, "core.getActionFunc.javascript", "action", a, "error", err)
+			Log(ERROR|USR, ctx, "core.OttoActionInterpreter.GetThunk", "action", a, "error", err)
 			return nil, err
 		}
-		Log(DEBUG, ctx, "core.getActionFunc.javascript",
+		Log(DEBUG, ctx, "core.OttoActionInterpreter.GetThunk",
 			"action", a, "stage", "done")
 		return v, err
 	}, nil
@@ -369,7 +425,11 @@ func (loc *Location) getActionFunc(ctx *Context, bs Bindings, a Action) (func() 
 			}
 		}
 
-		script, err := CompileJavascript(ctx, loc, libraries, a.Code.(string))
+		code, err := a.GetStringCode()
+		if err != nil {
+			return nil, err
+		}
+		script, err := CompileJavascript(ctx, loc, libraries, code)
 		if nil != err {
 			return nil, err
 		}

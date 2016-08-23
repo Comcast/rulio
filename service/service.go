@@ -669,6 +669,14 @@ func (s *Service) ProcessRequest(ctx *core.Context, m map[string]interface{}, ou
 
 		code, _, err := GetStringParam(m, "code", true)
 
+		encoding, provided, err := GetStringParam(m, "encoding", false)
+		if provided {
+			code, err = core.DecodeString(encoding, code)
+			if err != nil {
+				return nil, err
+			}
+		}
+
 		bs := make(core.Bindings)
 
 		var props map[string]interface{}

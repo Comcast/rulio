@@ -580,6 +580,41 @@ echo "# $N       Verify that we deleted the second fact"
 curl -s "$ENDPOINT/api/loc/facts/get?location=$ACCOUNT&id=f2" | tee $DIR/$N.txt | \
     grep -q 'not found' && pass || fail
 
+## Code encodings
+
+echo "# $N       Protest when given encoding is bad"
+cat<<EOF | curl -s -d "@-" "$ENDPOINT/api/loc/util/js" | tee $DIR/$N.txt | grep -q -F "unsupported encoding" && pass || fail
+{"location":"$ACCOUNT",
+ "code":"1+2",
+ "encoding":"foo"}
+EOF
+
+echo "# $N       Base64 code encoding"
+cat<<EOF | curl -s -d "@-" "$ENDPOINT/api/loc/util/js" | tee $DIR/$N.txt | grep -q -F '"result":3' && pass || fail
+{"location":"$ACCOUNT",
+ "code":"$(echo '1+2' | base64)",
+ "encoding":"base64"}
+EOF
+
+echo "# $N       Clear location"
+curl -s "$ENDPOINT/api/loc/admin/clear?location=$ACCOUNT" | tee $DIR/$N.txt | \
+    grep -q "okay" && pass || fail
+
+# Freedom is obedience to self-formulated rules.
+#
+# -- Aristotle, Nicomachean Ethics
+
+echo "# $N       Add a rule with encoded code"
+cat <<EOF | curl -s -d "@-" "$ENDPOINT/api/loc/rules/add" | tee $DIR/$N.txt | grep -q '"id"' && pass || fail
+{"location":"$ACCOUNT",
+  "rule": {"when":{"pattern":{"wants":"?x"}},
+           "action":{"opts":{"encoding":"base64"}, "code": "$(echo 'console.log("wants " + x); "wants " + x;' | base64)"}}}
+EOF
+
+echo "# $N       Send an event to trigger that rule with encoded code"
+curl -s --data-urlencode 'event={"wants":"tacos"}' \
+   "$ENDPOINT/api/loc/events/ingest?location=$ACCOUNT" | tee $DIR/$N.txt | \
+   grep -qF '"values":["wants tacos"]' && pass || fail
 
 echo "Passed: $PASSES"
 echo "Failed: $FAILURES"
