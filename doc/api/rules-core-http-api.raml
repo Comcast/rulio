@@ -83,7 +83,7 @@ documentation:
           application/json:
             example: |
               {
-                "secs": 1.472055454e+09
+                "secs": 1.472056274e+09
               }
 /sys/util/match:
   post:
@@ -96,8 +96,8 @@ documentation:
             "$schema": "http://json-schema.org/draft-03/schema",
             "type": "object",
             "properties": {
-              "pattern": {"type":"string","description":"A pattern in JSON"},
-              "fact": {"type":"string","description":"A fact in JSON"}
+              "fact": {"type":"string","description":"A fact in JSON"},
+              "pattern": {"type":"string","description":"A pattern in JSON"}
             }
           }
         example: |
@@ -124,10 +124,10 @@ documentation:
             example: |
               [
                 {
-                  "?kid": "lisa"
+                  "?kid": "bart"
                 },
                 {
-                  "?kid": "bart"
+                  "?kid": "lisa"
                 }
               ]
 /sys/util/js:
@@ -191,7 +191,7 @@ documentation:
             example: |
               [
                 {
-                  "secs": 1.472055454e+09
+                  "secs": 1.472056274e+09
                 },
                 {
                   "result": 3
@@ -220,7 +220,11 @@ documentation:
           application/json:
             example: |
               {
-                "locations": []
+                "locations": [
+                  "here",
+                  "CreatedLocation",
+                  "grandpa"
+                ]
               }
 /loc/admin/size:
   post:
@@ -279,7 +283,7 @@ documentation:
           application/json:
             example: |
               {
-                "id": "e89ee716-eeb9-47ed-9d6d-26734e46bc0f"
+                "id": "b8ecadf9-e7d2-4b79-b9e4-436269285c08"
               }
 /loc/facts/search:
   post:
@@ -312,7 +316,7 @@ documentation:
             example: |
               {
                 "Checked": 1,
-                "Elapsed": 426207,
+                "Elapsed": 424613,
                 "Expired": 0,
                 "Found": [
                   {
@@ -322,7 +326,7 @@ documentation:
                         "?who": "homer"
                       }
                     ],
-                    "Id": "e89ee716-eeb9-47ed-9d6d-26734e46bc0f",
+                    "Id": "b8ecadf9-e7d2-4b79-b9e4-436269285c08",
                     "Js": "{\\"likes\\":\\"beer\\",\\"person\\":\\"homer\\"}"
                   }
                 ]
@@ -373,7 +377,7 @@ documentation:
                   }
                 ],
                 "Checked": 0,
-                "Elapsed": 3.02353e+06
+                "Elapsed": 1.504273e+06
               }
 /loc/rules/add:
   post:
@@ -482,7 +486,7 @@ documentation:
           application/json:
             example: |
               {
-                "id": "23d74dfa-71d0-4006-a659-200c01c6169b",
+                "id": "6647ad49-424e-4fcf-a7ec-be8c54ddbe81",
                 "result": {
                   "children": [
                     {
@@ -590,6 +594,36 @@ documentation:
                   ]
                 }
               }
+/loc/parents:
+  post:
+    description: |
+      Get or set a location's parents
+    body:
+      application/json:
+        schema: |
+          {
+            "$schema": "http://json-schema.org/draft-03/schema",
+            "type": "object",
+            "properties": {
+              "set": {"type":"string","description":"JSON representing an array of strings to set the parents; if not provided, get the current parents"}
+            }
+          }
+        example: |
+          {
+            "location": "here",
+            "set": "[\\"grandpa\\"]",
+            "uri": "/loc/parents"
+          }
+    responses:
+      200:
+        body:
+          application/json:
+            example: |
+              {
+                "result": [
+                  "grandpa"
+                ]
+              }
 /loc/events/retry:
   post:
     description: |
@@ -601,8 +635,8 @@ documentation:
             "$schema": "http://json-schema.org/draft-03/schema",
             "type": "object",
             "properties": {
-              "work": {"type":"string","description":"The event work as returned by 'ingest'"},
-              "location": {"type":"string","description":"The target location"}
+              "location": {"type":"string","description":"The target location"},
+              "work": {"type":"string","description":"The event work as returned by 'ingest'"}
             }
           }
 /sys/admin/timers/names:
@@ -628,29 +662,39 @@ documentation:
           application/json:
             example: |
               [
+                "RunJavascript",
+                "SystemQuery",
+                "SystemAddRule",
+                "EnableRule",
+                "ListRules",
+                "SearchRules",
+                "SystemProcessEvent",
+                "Clear",
+                "GetParents",
                 "AddFact",
                 "SystemSearchFacts",
                 "SystemListRules",
-                "ProcessRequest",
-                "ServeHTTP",
                 "IndexedState.Load",
                 "SystemAddFact",
                 "TermIndex",
-                "searchFacts",
-                "AddRule",
                 "ExecAction",
-                "RunJavascript",
+                "SystemRemRule",
+                "LocationRunJavascript",
                 "SystemOpenLocation",
                 "IndexedState.Search",
                 "CodeQuery.Exec",
                 "Query",
-                "SystemQuery",
-                "SystemAddRule",
                 "ExecQuery",
-                "ListRules",
                 "IndexedState.FindRules",
-                "SearchRules",
-                "SystemProcessEvent"
+                "IndexedState.Rem",
+                "SystemRunJavascript",
+                "SetParents",
+                "ProcessRequest",
+                "ServeHTTP",
+                "searchFacts",
+                "AddRule",
+                "RemRule",
+                "Delete"
               ]
 /sys/admin/timers/get:
   post:
@@ -663,9 +707,9 @@ documentation:
             "$schema": "http://json-schema.org/draft-03/schema",
             "type": "object",
             "properties": {
+              "limit": {"type":"string","description":"Optional max number to return"},
               "name": {"type":"string","description":"Timer name"},
-              "after": {"type":"string","description":"Optional seq integer (defaults to -1)"},
-              "limit": {"type":"string","description":"Optional max number to return"}
+              "after": {"type":"string","description":"Optional seq integer (defaults to -1)"}
             }
           }
         example: |
@@ -681,19 +725,19 @@ documentation:
             example: |
               [
                 {
-                  "Elapsed": 1.173444e+06,
-                  "Seq": 13,
-                  "Timestamp": "2016-08-24T16:17:34.073Z"
+                  "Elapsed": 5.073008e+06,
+                  "Seq": 333,
+                  "Timestamp": "2016-08-24T16:31:14.661Z"
                 },
                 {
-                  "Elapsed": 6.036724e+06,
-                  "Seq": 14,
-                  "Timestamp": "2016-08-24T16:17:34.079Z"
+                  "Elapsed": 3.36585e+06,
+                  "Seq": 334,
+                  "Timestamp": "2016-08-24T16:31:14.666Z"
                 },
                 {
-                  "Elapsed": 38583,
-                  "Seq": 15,
-                  "Timestamp": "2016-08-24T16:17:34.080Z"
+                  "Elapsed": 44646,
+                  "Seq": 335,
+                  "Timestamp": "2016-08-24T16:31:14.667Z"
                 }
               ]
 /loc/rules/disable:
@@ -737,8 +781,8 @@ documentation:
             "$schema": "http://json-schema.org/draft-03/schema",
             "type": "object",
             "properties": {
-              "location": {"type":"string","description":"The target location"},
-              "id": {"type":"string","description":"The rule ID as returned by a `/rules/add`"}
+              "id": {"type":"string","description":"The rule ID as returned by a `/rules/add`"},
+              "location": {"type":"string","description":"The target location"}
             }
           }
         example: |
@@ -926,22 +970,22 @@ documentation:
             example: |
               {
                 "ActionExecs": 0,
-                "AddFacts": 1,
-                "AddRules": 1,
+                "AddFacts": 10,
+                "AddRules": 10,
                 "ErrorCount": 0,
                 "GetEventHistorys": 0,
                 "GetFacts": 0,
                 "GetRules": 0,
                 "ListLocations": 0,
-                "ListRules": 1,
+                "ListRules": 10,
                 "NewLocations": 0,
                 "ProcessEvents": 0,
                 "RemFacts": 0,
-                "RemRules": 1,
-                "SearchFacts": 4,
-                "SearchRules": 1,
-                "TotalCalls": 15,
-                "TotalTime": 2.0413182e+07,
+                "RemRules": 10,
+                "SearchFacts": 40,
+                "SearchRules": 10,
+                "TotalCalls": 165,
+                "TotalTime": 1.44152386e+08,
                 "UpdateRules": 0
               }
 /loc/admin/clear:
@@ -995,11 +1039,11 @@ documentation:
             example: |
               {
                 "cgos": 1,
-                "goroutines": 8,
+                "goroutines": 12,
                 "goversion": "go1.6",
                 "memstats": {
-                  "Alloc": 2.77024e+06,
-                  "BuckHashSys": 1.44601e+06,
+                  "Alloc": 4.007392e+06,
+                  "BuckHashSys": 1.490418e+06,
                   "BySize": [
                     {
                       "Frees": 0,
@@ -1007,173 +1051,173 @@ documentation:
                       "Size": 0
                     },
                     {
-                      "Frees": 19955,
-                      "Mallocs": 20835,
+                      "Frees": 229256,
+                      "Mallocs": 231038,
                       "Size": 8
                     },
                     {
-                      "Frees": 68467,
-                      "Mallocs": 72788,
+                      "Frees": 795184,
+                      "Mallocs": 803606,
                       "Size": 16
                     },
                     {
-                      "Frees": 7420,
-                      "Mallocs": 12666,
+                      "Frees": 87494,
+                      "Mallocs": 95791,
                       "Size": 32
                     },
                     {
-                      "Frees": 4257,
-                      "Mallocs": 5173,
+                      "Frees": 51156,
+                      "Mallocs": 53081,
                       "Size": 48
                     },
                     {
-                      "Frees": 1636,
-                      "Mallocs": 2248,
+                      "Frees": 20269,
+                      "Mallocs": 21679,
                       "Size": 64
                     },
                     {
-                      "Frees": 2090,
-                      "Mallocs": 2266,
+                      "Frees": 24435,
+                      "Mallocs": 24715,
                       "Size": 80
                     },
                     {
-                      "Frees": 4049,
-                      "Mallocs": 4584,
+                      "Frees": 48565,
+                      "Mallocs": 50046,
                       "Size": 96
                     },
                     {
-                      "Frees": 1457,
-                      "Mallocs": 1596,
+                      "Frees": 17765,
+                      "Mallocs": 17964,
                       "Size": 112
                     },
                     {
-                      "Frees": 218,
-                      "Mallocs": 242,
+                      "Frees": 2604,
+                      "Mallocs": 2637,
                       "Size": 128
                     },
                     {
-                      "Frees": 322,
-                      "Mallocs": 340,
+                      "Frees": 3947,
+                      "Mallocs": 3992,
                       "Size": 144
                     },
                     {
-                      "Frees": 349,
-                      "Mallocs": 417,
+                      "Frees": 4276,
+                      "Mallocs": 4360,
                       "Size": 160
                     },
                     {
-                      "Frees": 1584,
-                      "Mallocs": 1665,
+                      "Frees": 17141,
+                      "Mallocs": 17282,
                       "Size": 176
                     },
                     {
-                      "Frees": 26,
-                      "Mallocs": 36,
+                      "Frees": 349,
+                      "Mallocs": 365,
                       "Size": 192
                     },
                     {
-                      "Frees": 1140,
-                      "Mallocs": 1227,
+                      "Frees": 12768,
+                      "Mallocs": 12909,
                       "Size": 208
                     },
                     {
-                      "Frees": 397,
-                      "Mallocs": 418,
+                      "Frees": 4537,
+                      "Mallocs": 4571,
                       "Size": 224
                     },
                     {
-                      "Frees": 342,
-                      "Mallocs": 364,
+                      "Frees": 4007,
+                      "Mallocs": 4051,
                       "Size": 240
                     },
                     {
-                      "Frees": 218,
-                      "Mallocs": 238,
+                      "Frees": 2054,
+                      "Mallocs": 2081,
                       "Size": 256
                     },
                     {
-                      "Frees": 1808,
-                      "Mallocs": 1922,
+                      "Frees": 20805,
+                      "Mallocs": 21005,
                       "Size": 288
                     },
                     {
-                      "Frees": 748,
-                      "Mallocs": 791,
+                      "Frees": 9420,
+                      "Mallocs": 9499,
                       "Size": 320
                     },
                     {
-                      "Frees": 1625,
-                      "Mallocs": 2058,
+                      "Frees": 21385,
+                      "Mallocs": 22627,
                       "Size": 352
                     },
                     {
-                      "Frees": 43,
-                      "Mallocs": 82,
+                      "Frees": 454,
+                      "Mallocs": 512,
                       "Size": 384
                     },
                     {
-                      "Frees": 604,
-                      "Mallocs": 660,
+                      "Frees": 6815,
+                      "Mallocs": 6915,
                       "Size": 416
                     },
                     {
-                      "Frees": 798,
-                      "Mallocs": 829,
+                      "Frees": 9211,
+                      "Mallocs": 9262,
                       "Size": 448
                     },
                     {
-                      "Frees": 1418,
-                      "Mallocs": 1487,
+                      "Frees": 16381,
+                      "Mallocs": 16509,
                       "Size": 480
                     },
                     {
-                      "Frees": 66,
-                      "Mallocs": 72,
+                      "Frees": 555,
+                      "Mallocs": 562,
                       "Size": 512
                     },
                     {
-                      "Frees": 34,
-                      "Mallocs": 42,
+                      "Frees": 367,
+                      "Mallocs": 377,
                       "Size": 576
                     },
                     {
-                      "Frees": 9,
-                      "Mallocs": 15,
+                      "Frees": 50,
+                      "Mallocs": 57,
                       "Size": 640
                     },
                     {
-                      "Frees": 102,
-                      "Mallocs": 113,
+                      "Frees": 1483,
+                      "Mallocs": 1498,
                       "Size": 704
                     },
                     {
-                      "Frees": 8,
-                      "Mallocs": 11,
+                      "Frees": 103,
+                      "Mallocs": 110,
                       "Size": 768
                     },
                     {
-                      "Frees": 66,
-                      "Mallocs": 69,
+                      "Frees": 508,
+                      "Mallocs": 511,
                       "Size": 896
                     },
                     {
-                      "Frees": 37,
-                      "Mallocs": 50,
+                      "Frees": 190,
+                      "Mallocs": 207,
                       "Size": 1024
                     },
                     {
-                      "Frees": 1387,
-                      "Mallocs": 1462,
+                      "Frees": 16078,
+                      "Mallocs": 16220,
                       "Size": 1152
                     },
                     {
-                      "Frees": 5,
-                      "Mallocs": 11,
+                      "Frees": 41,
+                      "Mallocs": 47,
                       "Size": 1280
                     },
                     {
-                      "Frees": 47,
-                      "Mallocs": 57,
+                      "Frees": 574,
+                      "Mallocs": 600,
                       "Size": 1408
                     },
                     {
@@ -1182,18 +1226,18 @@ documentation:
                       "Size": 1536
                     },
                     {
-                      "Frees": 7,
-                      "Mallocs": 16,
+                      "Frees": 8,
+                      "Mallocs": 17,
                       "Size": 1664
                     },
                     {
-                      "Frees": 24,
-                      "Mallocs": 40,
+                      "Frees": 96,
+                      "Mallocs": 112,
                       "Size": 2048
                     },
                     {
-                      "Frees": 2,
-                      "Mallocs": 8,
+                      "Frees": 20,
+                      "Mallocs": 26,
                       "Size": 2304
                     },
                     {
@@ -1202,8 +1246,8 @@ documentation:
                       "Size": 2560
                     },
                     {
-                      "Frees": 15,
-                      "Mallocs": 19,
+                      "Frees": 187,
+                      "Mallocs": 199,
                       "Size": 2816
                     },
                     {
@@ -1213,17 +1257,17 @@ documentation:
                     },
                     {
                       "Frees": 2,
-                      "Mallocs": 9,
+                      "Mallocs": 10,
                       "Size": 3328
                     },
                     {
-                      "Frees": 18,
-                      "Mallocs": 27,
+                      "Frees": 44,
+                      "Mallocs": 53,
                       "Size": 4096
                     },
                     {
-                      "Frees": 1,
-                      "Mallocs": 7,
+                      "Frees": 10,
+                      "Mallocs": 16,
                       "Size": 4608
                     },
                     {
@@ -1232,8 +1276,8 @@ documentation:
                       "Size": 5376
                     },
                     {
-                      "Frees": 143,
-                      "Mallocs": 158,
+                      "Frees": 2066,
+                      "Mallocs": 2087,
                       "Size": 6144
                     },
                     {
@@ -1252,8 +1296,8 @@ documentation:
                       "Size": 6912
                     },
                     {
-                      "Frees": 8,
-                      "Mallocs": 9,
+                      "Frees": 159,
+                      "Mallocs": 160,
                       "Size": 8192
                     },
                     {
@@ -1262,13 +1306,13 @@ documentation:
                       "Size": 8448
                     },
                     {
-                      "Frees": 1,
-                      "Mallocs": 1,
+                      "Frees": 6,
+                      "Mallocs": 6,
                       "Size": 8704
                     },
                     {
-                      "Frees": 0,
-                      "Mallocs": 0,
+                      "Frees": 3,
+                      "Mallocs": 3,
                       "Size": 9472
                     },
                     {
@@ -1309,25 +1353,25 @@ documentation:
                   ],
                   "DebugGC": false,
                   "EnableGC": true,
-                  "Frees": 127329,
-                  "GCCPUFraction": 0.001256597540144446,
-                  "GCSys": 253952,
-                  "HeapAlloc": 2.77024e+06,
-                  "HeapIdle": 1.835008e+06,
-                  "HeapInuse": 3.964928e+06,
-                  "HeapObjects": 14237,
-                  "HeapReleased": 0,
-                  "HeapSys": 5.799936e+06,
-                  "LastGC": 1.4720554541097262e+18,
-                  "Lookups": 15,
+                  "Frees": 1.477868e+06,
+                  "GCCPUFraction": 0.00026430742922837385,
+                  "GCSys": 286720,
+                  "HeapAlloc": 4.007392e+06,
+                  "HeapIdle": 1.949696e+06,
+                  "HeapInuse": 4.898816e+06,
+                  "HeapObjects": 26617,
+                  "HeapReleased": 1.015808e+06,
+                  "HeapSys": 6.848512e+06,
+                  "LastGC": 1.472056274691259e+18,
+                  "Lookups": 45,
                   "MCacheInuse": 4800,
                   "MCacheSys": 16384,
-                  "MSpanInuse": 46080,
+                  "MSpanInuse": 52920,
                   "MSpanSys": 65536,
-                  "Mallocs": 141566,
-                  "NextGC": 4.194304e+06,
-                  "NumGC": 6,
-                  "OtherSys": 1.239166e+06,
+                  "Mallocs": 1.504485e+06,
+                  "NextGC": 4.63492e+06,
+                  "NumGC": 141,
+                  "OtherSys": 1.194758e+06,
                   "PauseEnd": [
                     1.472055454059436e+18,
                     1.47205545406789e+18,
@@ -1335,141 +1379,141 @@ documentation:
                     1.4720554540890202e+18,
                     1.472055454097763e+18,
                     1.4720554541097262e+18,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
+                    1.4720554541178284e+18,
+                    1.4720554541210652e+18,
+                    1.4720554541267466e+18,
+                    1.4720554541326948e+18,
+                    1.4720554574138342e+18,
+                    1.4720554574191864e+18,
+                    1.4720554574252508e+18,
+                    1.472055457434548e+18,
+                    1.4720554574406195e+18,
+                    1.4720554574469294e+18,
+                    1.4720554574551488e+18,
+                    1.4720554574621322e+18,
+                    1.4720554574748209e+18,
+                    1.4720554574840207e+18,
+                    1.4720554574863258e+18,
+                    1.4720554574889567e+18,
+                    1.4720554574940908e+18,
+                    1.4720555775004933e+18,
+                    1.4720556856719204e+18,
+                    1.4720556856758362e+18,
+                    1.472055685682941e+18,
+                    1.4720556856861215e+18,
+                    1.472055685693009e+18,
+                    1.4720556856989445e+18,
+                    1.4720556857041055e+18,
+                    1.4720556857094953e+18,
+                    1.4720556857162954e+18,
+                    1.472055685725952e+18,
+                    1.472055685731142e+18,
+                    1.4720556857360402e+18,
+                    1.4720556857448998e+18,
+                    1.4720556857471278e+18,
+                    1.4720556857495547e+18,
+                    1.4720556857550185e+18,
+                    1.4720557297057544e+18,
+                    1.4720557297102715e+18,
+                    1.4720557297191176e+18,
+                    1.472055729727049e+18,
+                    1.4720557297365745e+18,
+                    1.4720557297444572e+18,
+                    1.472055729754049e+18,
+                    1.4720557297603686e+18,
+                    1.4720557297678262e+18,
+                    1.472055729777839e+18,
+                    1.4720557297804836e+18,
+                    1.4720557297840515e+18,
+                    1.4720557297973466e+18,
+                    1.4720558665688878e+18,
+                    1.472055876739626e+18,
+                    1.4720559211293614e+18,
+                    1.4720559211343224e+18,
+                    1.472055921139997e+18,
+                    1.4720559211485427e+18,
+                    1.4720559211593674e+18,
+                    1.4720559211631278e+18,
+                    1.4720559211743114e+18,
+                    1.472055921180805e+18,
+                    1.4720559211872955e+18,
+                    1.4720559211919619e+18,
+                    1.4720559211966538e+18,
+                    1.4720559212035553e+18,
+                    1.4720559212084188e+18,
+                    1.4720559212115722e+18,
+                    1.4720559212137887e+18,
+                    1.4720559212189647e+18,
+                    1.4720559212315167e+18,
+                    1.4720559598281464e+18,
+                    1.4720559598337574e+18,
+                    1.4720559598446385e+18,
+                    1.4720559598547236e+18,
+                    1.4720559598626944e+18,
+                    1.472055959875059e+18,
+                    1.472055959887661e+18,
+                    1.4720559598961656e+18,
+                    1.4720559599086546e+18,
+                    1.4720559599183421e+18,
+                    1.4720559599243215e+18,
+                    1.472055959927182e+18,
+                    1.472055959931753e+18,
+                    1.47205595993978e+18,
+                    1.4720560799487258e+18,
+                    1.4720561066777687e+18,
+                    1.4720561066826747e+18,
+                    1.472056106688003e+18,
+                    1.472056106692349e+18,
+                    1.4720561067002545e+18,
+                    1.4720561067061402e+18,
+                    1.472056106710458e+18,
+                    1.4720561067167245e+18,
+                    1.4720561067216438e+18,
+                    1.4720561067259876e+18,
+                    1.4720561067346665e+18,
+                    1.4720561067406738e+18,
+                    1.4720561067463775e+18,
+                    1.4720561067483236e+18,
+                    1.4720561067509343e+18,
+                    1.4720561067566246e+18,
+                    1.4720561400079583e+18,
+                    1.4720561400119194e+18,
+                    1.4720561400185283e+18,
+                    1.4720561400250772e+18,
+                    1.4720561400351882e+18,
+                    1.4720561400442445e+18,
+                    1.4720561400504714e+18,
+                    1.4720561400670134e+18,
+                    1.4720561400740163e+18,
+                    1.4720561400820347e+18,
+                    1.472056140098047e+18,
+                    1.4720561401004337e+18,
+                    1.4720561401089715e+18,
+                    1.4720561401192625e+18,
+                    1.4720562532700526e+18,
+                    1.4720562532747205e+18,
+                    1.472056253281327e+18,
+                    1.472056253287658e+18,
+                    1.4720562532943409e+18,
+                    1.472056253301134e+18,
+                    1.472056253305179e+18,
+                    1.4720562533109356e+18,
+                    1.4720562533154614e+18,
+                    1.4720562533231148e+18,
+                    1.4720562533275617e+18,
+                    1.472056253332507e+18,
+                    1.4720562533348918e+18,
+                    1.4720562533379187e+18,
+                    1.4720562533436032e+18,
+                    1.4720562746330737e+18,
+                    1.4720562746378038e+18,
+                    1.4720562746448225e+18,
+                    1.4720562746544965e+18,
+                    1.4720562746582382e+18,
+                    1.4720562746658355e+18,
+                    1.4720562746728968e+18,
+                    1.4720562746843602e+18,
+                    1.472056274691259e+18,
                     0,
                     0,
                     0,
@@ -1593,141 +1637,141 @@ documentation:
                     305355,
                     927384,
                     2.956444e+06,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
+                    1.407766e+06,
+                    2.378583e+06,
+                    1.14271e+06,
+                    354217,
+                    503435,
+                    1.717309e+06,
+                    458746,
+                    374608,
+                    318309,
+                    427118,
+                    424386,
+                    1.621504e+06,
+                    498439,
+                    3.940309e+06,
+                    1.448486e+06,
+                    1.355399e+06,
+                    468538,
+                    462893,
+                    441929,
+                    469686,
+                    439857,
+                    495055,
+                    2.768425e+06,
+                    372873,
+                    523030,
+                    448754,
+                    329700,
+                    673838,
+                    449802,
+                    310577,
+                    1.218704e+06,
+                    1.349067e+06,
+                    1.340282e+06,
+                    749961,
+                    276916,
+                    325842,
+                    380331,
+                    210152,
+                    370945,
+                    384366,
+                    3.400214e+06,
+                    329537,
+                    388306,
+                    1.464966e+06,
+                    1.769275e+06,
+                    2.361209e+06,
+                    374002,
+                    4.469448e+06,
+                    171357,
+                    585894,
+                    339856,
+                    2.299317e+06,
+                    3.364857e+06,
+                    1.480109e+06,
+                    357977,
+                    2.666619e+06,
+                    336355,
+                    365158,
+                    324513,
+                    434716,
+                    329702,
+                    1.114447e+06,
+                    1.422481e+06,
+                    1.438706e+06,
+                    3.589177e+06,
+                    488129,
+                    590537,
+                    271519,
+                    5.76546e+06,
+                    2.568728e+06,
+                    2.343542e+06,
+                    3.786401e+06,
+                    5.00368e+06,
+                    465779,
+                    7.734905e+06,
+                    321617,
+                    5.801847e+06,
+                    1.496203e+06,
+                    3.418867e+06,
+                    2.195654e+06,
+                    5.139401e+06,
+                    414148,
+                    726318,
+                    324307,
+                    316842,
+                    427083,
+                    286596,
+                    434923,
+                    464068,
+                    406050,
+                    383988,
+                    275057,
+                    428048,
+                    4.742285e+06,
+                    1.305529e+06,
+                    1.440026e+06,
+                    363851,
+                    286350,
+                    314839,
+                    311140,
+                    437428,
+                    409600,
+                    1.226971e+06,
+                    347042,
+                    460569,
+                    495909,
+                    2.527057e+06,
+                    4.846163e+06,
+                    1.415649e+06,
+                    7.286847e+06,
+                    752614,
+                    750401,
+                    499771,
+                    220915,
+                    475362,
+                    386409,
+                    393665,
+                    388816,
+                    321817,
+                    308031,
+                    522623,
+                    327256,
+                    1.468064e+06,
+                    1.577037e+06,
+                    1.499489e+06,
+                    372767,
+                    177899,
+                    363880,
+                    645189,
+                    309870,
+                    367645,
+                    364787,
+                    368407,
+                    455625,
+                    594104,
                     0,
                     0,
                     0,
@@ -1844,11 +1888,11 @@ documentation:
                     0,
                     0
                   ],
-                  "PauseTotalNs": 5.789382e+06,
+                  "PauseTotalNs": 1.69009822e+08,
                   "StackInuse": 491520,
                   "StackSys": 491520,
-                  "Sys": 9.312504e+06,
-                  "TotalAlloc": 1.6669256e+07
+                  "Sys": 1.0393848e+07,
+                  "TotalAlloc": 1.79980848e+08
                 }
               }
 /sys/admin/pending:
@@ -1902,9 +1946,10 @@ documentation:
           application/json:
             example: |
               {
-                "active": 27,
-                "idle": 26,
-                "new": 1
+                "active": 347,
+                "closed": 15,
+                "idle": 346,
+                "new": 16
               }
 /sys/admin/gc:
   post:
@@ -1983,7 +2028,7 @@ documentation:
               {
                 "now": 70,
                 "status": "okay",
-                "was": 100
+                "was": 70
               }
 /sys/stats:
   post:
@@ -2009,22 +2054,22 @@ documentation:
             example: |
               {
                 "ActionExecs": 0,
-                "AddFacts": 1,
-                "AddRules": 1,
+                "AddFacts": 10,
+                "AddRules": 10,
                 "ErrorCount": 0,
                 "GetEventHistorys": 0,
                 "GetFacts": 0,
                 "GetRules": 0,
                 "ListLocations": 0,
-                "ListRules": 1,
-                "NewLocations": 2,
-                "ProcessEvents": 1,
+                "ListRules": 10,
+                "NewLocations": 3,
+                "ProcessEvents": 10,
                 "RemFacts": 0,
-                "RemRules": 1,
-                "SearchFacts": 1,
+                "RemRules": 10,
+                "SearchFacts": 10,
                 "SearchRules": 0,
-                "TotalCalls": 18,
-                "TotalTime": 2.4529827e+07,
+                "TotalCalls": 169,
+                "TotalTime": 2.16288144e+08,
                 "UpdateRules": 0
               }
 /health/shallow:

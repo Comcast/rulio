@@ -575,7 +575,7 @@ as a set, not a list or array.
 The API `GetParents()` gets a location's parents (if any).
 
 This parents data is represented as fact (though it has special
-"property" indexing to make read access more efficient):x
+"property" indexing to make read access more efficient):
 
 ```Javascript
 {"!parent":["homer","marge"]}
@@ -595,6 +595,10 @@ or
 {"pattern":{"!parents":"?parents"}}
 ```
 
+The network API `/api/loc/parents` can be used to get or set the
+parents.  Provide the parameter `set` with a value that's a JSON
+representation of an array of strings to set a location's parents.
+With no paramters, the function returns the current parents.
 
 A location can disable an inherited rule.
 

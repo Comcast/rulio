@@ -79,6 +79,11 @@
   "exampleRequest":{"location":"here",
 		    "event":{"person":"homer","arrived":"home"}}},
 
+ {"op":"/loc/parents",
+  "description":"Get or set a location's parents",
+  "params":{"set":"JSON representing an array of strings to set the parents; if not provided, get the current parents"},
+  "exampleRequest":{"location":"here", "set": "[\"grandpa\"]"}},
+
  {"op":"/loc/events/retry",
   "description":"Retry event processing",
   "params":{"location":"The target location",
