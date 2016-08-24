@@ -32,3 +32,4 @@ fvt:	rulesys
 
 clean:
 	rm -f rulesys/rulesys engine.log
+	for d in core sys service storage/* cron crolt rulesys tools; do go clean; done
