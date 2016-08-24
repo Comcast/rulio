@@ -24,7 +24,6 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"log"
 	"net"
 	"net/http"
 	"net/url"
@@ -218,7 +217,6 @@ var parameterTypes = map[string]string{
 var UnknownSyntax = errors.New("unknown syntax")
 
 func MaybeYAML(bs []byte) bool {
-	log.Printf("MaybeYAML '%s'", bs)
 	newline := bytes.Index(bs, []byte("\n"))
 	return 0 <= newline && newline < len(bs)
 }
