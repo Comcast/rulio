@@ -57,7 +57,7 @@ documentation:
           application/json:
             example: |
               {
-                "go": "go1.5.1",
+                "go": "go1.6",
                 "version": "0.0.9"
               }
 /sys/util/nowsecs:
@@ -83,7 +83,7 @@ documentation:
           application/json:
             example: |
               {
-                "secs": 1.449177701e+09
+                "secs": 1.472055454e+09
               }
 /sys/util/match:
   post:
@@ -191,7 +191,7 @@ documentation:
             example: |
               [
                 {
-                  "secs": 1.449177701e+09
+                  "secs": 1.472055454e+09
                 },
                 {
                   "result": 3
@@ -279,7 +279,7 @@ documentation:
           application/json:
             example: |
               {
-                "id": "698c16b6-aff3-4f3d-bee8-f00ffbf9236f"
+                "id": "e89ee716-eeb9-47ed-9d6d-26734e46bc0f"
               }
 /loc/facts/search:
   post:
@@ -292,8 +292,8 @@ documentation:
             "$schema": "http://json-schema.org/draft-03/schema",
             "type": "object",
             "properties": {
-              "location": {"type":"string","description":"The target location"},
-              "fact": {"type":"string","description":"The fact in JSON"}
+              "fact": {"type":"string","description":"The fact in JSON"},
+              "location": {"type":"string","description":"The target location"}
             }
           }
         example: |
@@ -312,7 +312,7 @@ documentation:
             example: |
               {
                 "Checked": 1,
-                "Elapsed": 1.836546e+06,
+                "Elapsed": 426207,
                 "Expired": 0,
                 "Found": [
                   {
@@ -322,7 +322,7 @@ documentation:
                         "?who": "homer"
                       }
                     ],
-                    "Id": "698c16b6-aff3-4f3d-bee8-f00ffbf9236f",
+                    "Id": "e89ee716-eeb9-47ed-9d6d-26734e46bc0f",
                     "Js": "{\\"likes\\":\\"beer\\",\\"person\\":\\"homer\\"}"
                   }
                 ]
@@ -373,7 +373,7 @@ documentation:
                   }
                 ],
                 "Checked": 0,
-                "Elapsed": 1.3694502e+07
+                "Elapsed": 3.02353e+06
               }
 /loc/rules/add:
   post:
@@ -386,9 +386,9 @@ documentation:
             "$schema": "http://json-schema.org/draft-03/schema",
             "type": "object",
             "properties": {
+              "location": {"type":"string","description":"The target location"},
               "id": {"type":"string","description":"Optional id"},
-              "rule": {"type":"string","description":"The rule in JSON"},
-              "location": {"type":"string","description":"The target location"}
+              "rule": {"type":"string","description":"The rule in JSON"}
             }
           }
         example: |
@@ -482,7 +482,7 @@ documentation:
           application/json:
             example: |
               {
-                "id": "095b25cd-3b76-4017-898a-45fd7d632bca",
+                "id": "23d74dfa-71d0-4006-a659-200c01c6169b",
                 "result": {
                   "children": [
                     {
@@ -494,6 +494,12 @@ documentation:
                       },
                       "bindingss": [
                         {
+                          "?event": {
+                            "arrived": "home",
+                            "person": "homer"
+                          },
+                          "?location": "here",
+                          "?ruleId": "rule42",
                           "?there": "home",
                           "?who": "homer"
                         }
@@ -501,6 +507,12 @@ documentation:
                       "children": [
                         {
                           "bindings": {
+                            "?event": {
+                              "arrived": "home",
+                              "person": "homer"
+                            },
+                            "?location": "here",
+                            "?ruleId": "rule42",
                             "?there": "home",
                             "?who": "homer"
                           },
@@ -589,8 +601,8 @@ documentation:
             "$schema": "http://json-schema.org/draft-03/schema",
             "type": "object",
             "properties": {
-              "location": {"type":"string","description":"The target location"},
-              "work": {"type":"string","description":"The event work as returned by 'ingest'"}
+              "work": {"type":"string","description":"The event work as returned by 'ingest'"},
+              "location": {"type":"string","description":"The target location"}
             }
           }
 /sys/admin/timers/names:
@@ -616,29 +628,29 @@ documentation:
           application/json:
             example: |
               [
-                "SystemOpenLocation",
-                "ExecQuery",
-                "Query",
-                "SystemQuery",
-                "AddRule",
-                "SystemListRules",
-                "IndexedState.FindRules",
-                "RunJavascript",
-                "TermIndex",
-                "IndexedState.Search",
-                "SearchFacts",
-                "SystemAddRule",
-                "ListRules",
+                "AddFact",
                 "SystemSearchFacts",
-                "CodeQuery.Exec",
-                "ExecAction",
-                "SystemProcessEvent",
+                "SystemListRules",
                 "ProcessRequest",
                 "ServeHTTP",
                 "IndexedState.Load",
-                "AddFact",
                 "SystemAddFact",
-                "SearchRules"
+                "TermIndex",
+                "searchFacts",
+                "AddRule",
+                "ExecAction",
+                "RunJavascript",
+                "SystemOpenLocation",
+                "IndexedState.Search",
+                "CodeQuery.Exec",
+                "Query",
+                "SystemQuery",
+                "SystemAddRule",
+                "ExecQuery",
+                "ListRules",
+                "IndexedState.FindRules",
+                "SearchRules",
+                "SystemProcessEvent"
               ]
 /sys/admin/timers/get:
   post:
@@ -669,19 +681,19 @@ documentation:
             example: |
               [
                 {
-                  "Elapsed": 7.732218e+06,
+                  "Elapsed": 1.173444e+06,
                   "Seq": 13,
-                  "Timestamp": "2015-12-03T21:21:41.450Z"
+                  "Timestamp": "2016-08-24T16:17:34.073Z"
                 },
                 {
-                  "Elapsed": 1.7263101e+07,
+                  "Elapsed": 6.036724e+06,
                   "Seq": 14,
-                  "Timestamp": "2015-12-03T21:21:41.470Z"
+                  "Timestamp": "2016-08-24T16:17:34.079Z"
                 },
                 {
-                  "Elapsed": 165424,
+                  "Elapsed": 38583,
                   "Seq": 15,
-                  "Timestamp": "2015-12-03T21:21:41.475Z"
+                  "Timestamp": "2016-08-24T16:17:34.080Z"
                 }
               ]
 /loc/rules/disable:
@@ -929,7 +941,7 @@ documentation:
                 "SearchFacts": 4,
                 "SearchRules": 1,
                 "TotalCalls": 15,
-                "TotalTime": 1.07336922e+08,
+                "TotalTime": 2.0413182e+07,
                 "UpdateRules": 0
               }
 /loc/admin/clear:
@@ -983,11 +995,11 @@ documentation:
             example: |
               {
                 "cgos": 1,
-                "goroutines": 15,
-                "goversion": "go1.5.1",
+                "goroutines": 8,
+                "goversion": "go1.6",
                 "memstats": {
-                  "Alloc": 3.214984e+06,
-                  "BuckHashSys": 1.450056e+06,
+                  "Alloc": 2.77024e+06,
+                  "BuckHashSys": 1.44601e+06,
                   "BySize": [
                     {
                       "Frees": 0,
@@ -995,167 +1007,167 @@ documentation:
                       "Size": 0
                     },
                     {
-                      "Frees": 20871,
-                      "Mallocs": 21078,
+                      "Frees": 19955,
+                      "Mallocs": 20835,
                       "Size": 8
                     },
                     {
-                      "Frees": 72194,
-                      "Mallocs": 77543,
+                      "Frees": 68467,
+                      "Mallocs": 72788,
                       "Size": 16
                     },
                     {
-                      "Frees": 11016,
-                      "Mallocs": 13378,
+                      "Frees": 7420,
+                      "Mallocs": 12666,
                       "Size": 32
                     },
                     {
-                      "Frees": 4516,
-                      "Mallocs": 5588,
+                      "Frees": 4257,
+                      "Mallocs": 5173,
                       "Size": 48
                     },
                     {
-                      "Frees": 338,
-                      "Mallocs": 573,
+                      "Frees": 1636,
+                      "Mallocs": 2248,
                       "Size": 64
                     },
                     {
-                      "Frees": 1072,
-                      "Mallocs": 1185,
+                      "Frees": 2090,
+                      "Mallocs": 2266,
                       "Size": 80
                     },
                     {
-                      "Frees": 3803,
-                      "Mallocs": 4333,
+                      "Frees": 4049,
+                      "Mallocs": 4584,
                       "Size": 96
                     },
                     {
-                      "Frees": 1470,
-                      "Mallocs": 1580,
+                      "Frees": 1457,
+                      "Mallocs": 1596,
                       "Size": 112
                     },
                     {
-                      "Frees": 211,
-                      "Mallocs": 232,
+                      "Frees": 218,
+                      "Mallocs": 242,
                       "Size": 128
                     },
                     {
-                      "Frees": 1686,
-                      "Mallocs": 1786,
+                      "Frees": 322,
+                      "Mallocs": 340,
                       "Size": 144
                     },
                     {
-                      "Frees": 364,
-                      "Mallocs": 414,
+                      "Frees": 349,
+                      "Mallocs": 417,
                       "Size": 160
                     },
                     {
-                      "Frees": 1592,
-                      "Mallocs": 1701,
+                      "Frees": 1584,
+                      "Mallocs": 1665,
                       "Size": 176
                     },
                     {
-                      "Frees": 41,
-                      "Mallocs": 48,
+                      "Frees": 26,
+                      "Mallocs": 36,
                       "Size": 192
                     },
                     {
-                      "Frees": 285,
-                      "Mallocs": 332,
+                      "Frees": 1140,
+                      "Mallocs": 1227,
                       "Size": 208
                     },
                     {
-                      "Frees": 511,
-                      "Mallocs": 542,
+                      "Frees": 397,
+                      "Mallocs": 418,
                       "Size": 224
                     },
                     {
-                      "Frees": 517,
-                      "Mallocs": 548,
+                      "Frees": 342,
+                      "Mallocs": 364,
                       "Size": 240
                     },
                     {
-                      "Frees": 304,
-                      "Mallocs": 316,
+                      "Frees": 218,
+                      "Mallocs": 238,
                       "Size": 256
                     },
                     {
-                      "Frees": 2566,
-                      "Mallocs": 2720,
+                      "Frees": 1808,
+                      "Mallocs": 1922,
                       "Size": 288
                     },
                     {
-                      "Frees": 486,
-                      "Mallocs": 540,
+                      "Frees": 748,
+                      "Mallocs": 791,
                       "Size": 320
                     },
                     {
-                      "Frees": 1492,
-                      "Mallocs": 2018,
+                      "Frees": 1625,
+                      "Mallocs": 2058,
                       "Size": 352
                     },
                     {
-                      "Frees": 20,
-                      "Mallocs": 56,
+                      "Frees": 43,
+                      "Mallocs": 82,
                       "Size": 384
                     },
                     {
-                      "Frees": 60,
-                      "Mallocs": 82,
+                      "Frees": 604,
+                      "Mallocs": 660,
                       "Size": 416
                     },
                     {
-                      "Frees": 25,
-                      "Mallocs": 25,
+                      "Frees": 798,
+                      "Mallocs": 829,
                       "Size": 448
                     },
                     {
-                      "Frees": 1338,
-                      "Mallocs": 1452,
+                      "Frees": 1418,
+                      "Mallocs": 1487,
                       "Size": 480
                     },
                     {
-                      "Frees": 61,
-                      "Mallocs": 66,
+                      "Frees": 66,
+                      "Mallocs": 72,
                       "Size": 512
                     },
                     {
-                      "Frees": 235,
-                      "Mallocs": 246,
+                      "Frees": 34,
+                      "Mallocs": 42,
                       "Size": 576
                     },
                     {
-                      "Frees": 19,
-                      "Mallocs": 25,
+                      "Frees": 9,
+                      "Mallocs": 15,
                       "Size": 640
                     },
                     {
-                      "Frees": 66,
-                      "Mallocs": 71,
+                      "Frees": 102,
+                      "Mallocs": 113,
                       "Size": 704
                     },
                     {
-                      "Frees": 7,
-                      "Mallocs": 10,
+                      "Frees": 8,
+                      "Mallocs": 11,
                       "Size": 768
                     },
                     {
-                      "Frees": 18,
-                      "Mallocs": 22,
+                      "Frees": 66,
+                      "Mallocs": 69,
                       "Size": 896
                     },
                     {
-                      "Frees": 33,
-                      "Mallocs": 38,
+                      "Frees": 37,
+                      "Mallocs": 50,
                       "Size": 1024
                     },
                     {
-                      "Frees": 1350,
-                      "Mallocs": 1482,
+                      "Frees": 1387,
+                      "Mallocs": 1462,
                       "Size": 1152
                     },
                     {
-                      "Frees": 4,
+                      "Frees": 5,
                       "Mallocs": 11,
                       "Size": 1280
                     },
@@ -1165,28 +1177,28 @@ documentation:
                       "Size": 1408
                     },
                     {
-                      "Frees": 2,
-                      "Mallocs": 2,
+                      "Frees": 0,
+                      "Mallocs": 0,
                       "Size": 1536
                     },
                     {
-                      "Frees": 6,
+                      "Frees": 7,
                       "Mallocs": 16,
                       "Size": 1664
                     },
                     {
                       "Frees": 24,
-                      "Mallocs": 25,
+                      "Mallocs": 40,
                       "Size": 2048
                     },
                     {
-                      "Frees": 4,
-                      "Mallocs": 9,
+                      "Frees": 2,
+                      "Mallocs": 8,
                       "Size": 2304
                     },
                     {
-                      "Frees": 0,
-                      "Mallocs": 1,
+                      "Frees": 1,
+                      "Mallocs": 3,
                       "Size": 2560
                     },
                     {
@@ -1205,8 +1217,8 @@ documentation:
                       "Size": 3328
                     },
                     {
-                      "Frees": 20,
-                      "Mallocs": 31,
+                      "Frees": 18,
+                      "Mallocs": 27,
                       "Size": 4096
                     },
                     {
@@ -1215,12 +1227,12 @@ documentation:
                       "Size": 4608
                     },
                     {
-                      "Frees": 3,
-                      "Mallocs": 13,
+                      "Frees": 1,
+                      "Mallocs": 14,
                       "Size": 5376
                     },
                     {
-                      "Frees": 138,
+                      "Frees": 143,
                       "Mallocs": 158,
                       "Size": 6144
                     },
@@ -1240,8 +1252,8 @@ documentation:
                       "Size": 6912
                     },
                     {
-                      "Frees": 6,
-                      "Mallocs": 8,
+                      "Frees": 8,
+                      "Mallocs": 9,
                       "Size": 8192
                     },
                     {
@@ -1297,32 +1309,32 @@ documentation:
                   ],
                   "DebugGC": false,
                   "EnableGC": true,
-                  "Frees": 128975,
-                  "GCCPUFraction": 0.007981488895472691,
-                  "GCSys": 207872,
-                  "HeapAlloc": 3.214984e+06,
-                  "HeapIdle": 1.35168e+06,
-                  "HeapInuse": 4.481024e+06,
-                  "HeapObjects": 11617,
+                  "Frees": 127329,
+                  "GCCPUFraction": 0.001256597540144446,
+                  "GCSys": 253952,
+                  "HeapAlloc": 2.77024e+06,
+                  "HeapIdle": 1.835008e+06,
+                  "HeapInuse": 3.964928e+06,
+                  "HeapObjects": 14237,
                   "HeapReleased": 0,
-                  "HeapSys": 5.832704e+06,
-                  "LastGC": 1.4491777016882555e+18,
-                  "Lookups": 16,
-                  "MCacheInuse": 2416,
+                  "HeapSys": 5.799936e+06,
+                  "LastGC": 1.4720554541097262e+18,
+                  "Lookups": 15,
+                  "MCacheInuse": 4800,
                   "MCacheSys": 16384,
-                  "MSpanInuse": 42784,
+                  "MSpanInuse": 46080,
                   "MSpanSys": 65536,
-                  "Mallocs": 140592,
+                  "Mallocs": 141566,
                   "NextGC": 4.194304e+06,
-                  "NumGC": 5,
-                  "OtherSys": 756912,
+                  "NumGC": 6,
+                  "OtherSys": 1.239166e+06,
                   "PauseEnd": [
-                    1.4491777013564964e+18,
-                    1.4491777014402836e+18,
-                    1.44917770150068e+18,
-                    1.4491777015970885e+18,
-                    1.4491777016882555e+18,
-                    0,
+                    1.472055454059436e+18,
+                    1.47205545406789e+18,
+                    1.472055454077479e+18,
+                    1.4720554540890202e+18,
+                    1.472055454097763e+18,
+                    1.4720554541097262e+18,
                     0,
                     0,
                     0,
@@ -1575,12 +1587,12 @@ documentation:
                     0
                   ],
                   "PauseNs": [
-                    1.14753e+06,
-                    1.581475e+06,
-                    4.399755e+06,
-                    1.1954379e+07,
-                    1.0652185e+07,
-                    0,
+                    659992,
+                    480271,
+                    459936,
+                    305355,
+                    927384,
+                    2.956444e+06,
                     0,
                     0,
                     0,
@@ -1832,11 +1844,11 @@ documentation:
                     0,
                     0
                   ],
-                  "PauseTotalNs": 2.9735324e+07,
-                  "StackInuse": 458752,
-                  "StackSys": 458752,
-                  "Sys": 8.788216e+06,
-                  "TotalAlloc": 1.6288096e+07
+                  "PauseTotalNs": 5.789382e+06,
+                  "StackInuse": 491520,
+                  "StackSys": 491520,
+                  "Sys": 9.312504e+06,
+                  "TotalAlloc": 1.6669256e+07
                 }
               }
 /sys/admin/pending:
@@ -2012,7 +2024,7 @@ documentation:
                 "SearchFacts": 1,
                 "SearchRules": 0,
                 "TotalCalls": 18,
-                "TotalTime": 2.09355587e+08,
+                "TotalTime": 2.4529827e+07,
                 "UpdateRules": 0
               }
 /health/shallow:
