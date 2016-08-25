@@ -532,6 +532,8 @@ func (loc *Location) GetFact(ctx *Context, id string) (Map, error) {
 	return fact, err
 }
 
+var AncestorLoop = errors.New("ancestor loop detected")
+
 // DoAncestors calls the given function on this location and all of its ancestors in depth-first order.
 func (loc *Location) DoAncestors(ctx *Context, fn func(*Location) error) error {
 
@@ -547,6 +549,20 @@ func (loc *Location) DoAncestors(ctx *Context, fn func(*Location) error) error {
 		}
 
 		for _, parent := range parents {
+			if parent == loc.Name {
+				// Quick, local loop check.  To check
+				// for non-local loops, need to keep
+				// some state in the stack.  We're not
+				// (yet) doing that.
+				return AncestorLoop
+			}
+
+			// I could just remember how my father used to
+			// say that the reason for living was to get
+			// ready to stay dead a long time.
+			//
+			// -- William Faulkner, As I Lay Dying
+
 			p, err := loc.Provider.GetLocation(ctx, parent)
 			if err != nil {
 				return err

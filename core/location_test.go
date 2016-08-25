@@ -331,3 +331,39 @@ func TestDeleteLocationMem(t *testing.T) {
 	}
 
 }
+
+func TestLocationAncestorsLoopingProtection(t *testing.T) {
+	ctx, child := NamedTestingLocation(t, "child")
+
+	if err := child.SetProp(ctx, "", "parents", []interface{}{"child"}); err != nil {
+		t.Fatal(err)
+	}
+
+	child.Provider = NewSimpleLocationProvider(map[string]*Location{
+		"child": child,
+	})
+
+	terminated := make(chan bool)
+	caught := make(chan bool)
+	go func() {
+		_, cond := child.ProcessEvent(ctx, mapJS(`{"wants":"tacos"}`))
+		if cond != nil {
+			if cond.Msg == AncestorLoop.Error() {
+				caught <- true
+				return
+			}
+		}
+		if cond != nil {
+			t.Fatal(cond)
+		}
+		terminated <- true
+	}()
+
+	select {
+	case <-caught:
+	case <-terminated:
+		t.Fatal("loop not detected")
+	case <-time.After(3 * time.Second):
+		t.Fatal("timeout")
+	}
+}
