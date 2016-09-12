@@ -111,9 +111,10 @@ type Control struct {
 	// the timeout.  Not implemented yet.
 	ActionTimeout Duration
 
-	// JavascriptTimeout (nanoseconds) greater than zero will
-	// attempt to terminate any action execution that lasts longer
-	// than the timeout.
+	// JavascriptTimeout (nanoseconds) non-negative will attempt
+	// to terminate any action execution that lasts longer than
+	// the timeout.  Zero means to use
+	// System.DefaultJavascriptTimeout.
 	JavascriptTimeout Duration
 
 	// DisableExecFunction removes the 'shell' function from the

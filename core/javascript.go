@@ -886,12 +886,12 @@ func RunJavascript(ctx *Context, bs *Bindings, props map[string]interface{}, src
 
 	// Optionally time out the execution.
 	//
-	// Default is 60 seconds.  Set
-	// ctx.GetLoc().Control.ActionTimeout to override.  Zero means
-	// no timeout.  Costs an additional goroutine and a defer.
-	// Also is a little scary.  See
+	// Default is given by System.DefaultJavascriptTimeout.  Set
+	// ctx.GetLoc().Control.JavascriptTimeout to override.
+	// Negative means no timeout.  Costs an additional goroutine
+	// and a defer.  Also is a little scary.  See
 	// https://github.com/robertkrimen/otto#halting-problem .
-	timeout := SystemParameters.DefaultJavascriptTimeout
+	var timeout time.Duration
 	if SystemParameters.JavascriptTimeouts && ctx != nil && ctx.GetLoc() != nil {
 		c := ctx.GetLoc().Control()
 		if c != nil {
@@ -899,8 +899,11 @@ func RunJavascript(ctx *Context, bs *Bindings, props map[string]interface{}, src
 			Log(DEBUG, ctx, "core.RunJavascript", "JavascriptTimeout", timeout)
 		}
 	}
+	if timeout == 0 {
+		timeout = SystemParameters.DefaultJavascriptTimeout
+	}
 
-	if SystemParameters.JavascriptTimeouts && 0 < int64(timeout) {
+	if SystemParameters.JavascriptTimeouts && 0 <= int64(timeout) {
 		start := time.Now()
 		Log(DEBUG, ctx, "core.RunJavascript", "timeout", timeout, "start", start)
 		go func() {
