@@ -85,7 +85,7 @@ import (
 	"sync"
 	"time"
 
-	. "github.com/Comcast/rulio/core"
+	. "rulio/core"
 
 	"github.com/AdRoll/goamz/aws"
 	"github.com/AdRoll/goamz/dynamodb" // See MaxIdleConnsPerHost below

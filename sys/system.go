@@ -32,11 +32,11 @@ import (
 	"time"
 	"unsafe"
 
-	. "github.com/Comcast/rulio/core"
-	"github.com/Comcast/rulio/cron"
-	"github.com/Comcast/rulio/storage/bolt"
-	"github.com/Comcast/rulio/storage/cassandra"
-	"github.com/Comcast/rulio/storage/dynamodb"
+	. "rulio/core"
+	"rulio/cron"
+	"rulio/storage/bolt"
+	"rulio/storage/cassandra"
+	"rulio/storage/dynamodb"
 )
 
 // LocToGroup maps a location name to a group name.

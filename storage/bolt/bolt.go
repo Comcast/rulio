@@ -22,7 +22,7 @@ import (
 
 	"github.com/boltdb/bolt"
 
-	. "github.com/Comcast/rulio/core"
+	. "rulio/core"
 )
 
 // BoltStorage implements Storage using boltdb

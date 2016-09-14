@@ -10,7 +10,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Comcast/rulio/core"
+	"rulio/core"
 )
 
 var Speed = float64(50.0)

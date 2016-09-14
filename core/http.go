@@ -220,6 +220,8 @@ type HTTPResult struct {
 	// We use a string here for the convenience of Javascript
 	// callers.  Might be a bad idea.
 	Error string
+
+	Headers map[string]string `json:"headers,omitempty"`
 }
 
 // DoOnce get a client, constructs a request, issues the request, and
@@ -262,6 +264,11 @@ func (r HTTPRequest) DoOnce(ctx *Context, t *HTTPResult) error {
 	res, err := client.Do(req)
 	if res != nil {
 		t.Status = res.StatusCode
+		for k, v := range res.Header {
+			t.Headers[k] = strings.Join(v, ",")
+		}
+		Log(WARN, ctx, "XXXX HTTPRequest.do", "headers", t.Headers)
+
 		if res.Body != nil {
 			got, err := ioutil.ReadAll(res.Body)
 			if got != nil {

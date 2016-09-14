@@ -254,8 +254,8 @@ curl -s "$ENDPOINT/api/sys/stats" | python -mjson.tool
 ### APIs
 
 The engine is designed in packages.  The core is in
-[`core/`](https://godoc.org/github.com/Comcast/rulio/core), and
-[`sys/`](https://godoc.org/github.com/Comcast/rulio/sys) provides
+[`core/`](https://godoc.org/rulio/core), and
+[`sys/`](https://godoc.org/rulio/sys) provides
 something like a container for locations.
 
 The network API used above and provided by `service/` is rendered in

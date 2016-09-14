@@ -46,7 +46,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/Comcast/rulio/core"
+	"rulio/core"
 
 	"github.com/gorhill/cronexpr"
 )

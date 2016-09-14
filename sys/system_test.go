@@ -28,8 +28,8 @@ import (
 	"testing"
 	"time"
 
-	. "github.com/Comcast/rulio/core"
-	"github.com/Comcast/rulio/cron"
+	. "rulio/core"
+	"rulio/cron"
 )
 
 func JSON(x interface{}) string {

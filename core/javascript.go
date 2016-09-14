@@ -502,7 +502,7 @@ var JavascriptTestValue interface{}
 // RunJavascript executes Javascript code with the given bindings.  A
 // new environment is created for each call.  That environment
 // contains several bindings.  See
-// http://github.com/Comcast/rulio/blob/master/doc/Manual.md#in-process-javascript-actions
+// http://rulio/blob/master/doc/Manual.md#in-process-javascript-actions
 // for details.
 //
 // Currently the Javascript implementation is

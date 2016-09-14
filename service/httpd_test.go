@@ -25,7 +25,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Comcast/rulio/sys"
+	"rulio/sys"
 )
 
 func TestHTTP(t *testing.T) {

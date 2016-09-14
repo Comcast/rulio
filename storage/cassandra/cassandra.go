@@ -25,7 +25,7 @@ import (
 	"strings"
 	"sync"
 
-	. "github.com/Comcast/rulio/core"
+	. "rulio/core"
 )
 
 var cassStoreMutex sync.Mutex
