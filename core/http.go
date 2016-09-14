@@ -220,6 +220,9 @@ type HTTPResult struct {
 	// We use a string here for the convenience of Javascript
 	// callers.  Might be a bad idea.
 	Error string
+
+	// Headers are the response headers.
+	Headers map[string][]string
 }
 
 // DoOnce get a client, constructs a request, issues the request, and
@@ -261,6 +264,7 @@ func (r HTTPRequest) DoOnce(ctx *Context, t *HTTPResult) error {
 
 	res, err := client.Do(req)
 	if res != nil {
+		t.Headers = res.Header
 		t.Status = res.StatusCode
 		if res.Body != nil {
 			got, err := ioutil.ReadAll(res.Body)
