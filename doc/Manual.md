@@ -860,10 +860,10 @@ curl -d '{"locale":"Austin,TX","temp":"?x"}' 'http://localhost:6666/facts/search
 
 The `examples/` directory contains several example fact services.
 
-1. [`examples/add.py`](http://github.com/Comcast/rulio/blob/master/examples/add.py): Add numbers
-2. [`examples/stockfs.py`](http://github.com/Comcast/rlio/blob/master/examples/stockfs.py): Stock quotes
-3. [`examples/imdbfs.py`](http://github.com/Comcast/rulio/blob/master/examples/imdbfs.py): Movie data
-4. [`examples/weatherfs.py`](http://github.com/Comcast/rulio/blob/master/examples/weatherfs.py): Weather
+1. [`examples/add.py`](http://rulio/blob/master/examples/add.py): Add numbers
+2. [`examples/stockfs.py`](http://rlio/blob/master/examples/stockfs.py): Stock quotes
+3. [`examples/imdbfs.py`](http://rulio/blob/master/examples/imdbfs.py): Movie data
+4. [`examples/weatherfs.py`](http://rulio/blob/master/examples/weatherfs.py): Weather
 
 
 ### Action requests

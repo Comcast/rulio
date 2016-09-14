@@ -26,7 +26,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Comcast/rulio/core"
+	"rulio/core"
 )
 
 // InternalCron just wraps an internal cron so it can be a Cronner.

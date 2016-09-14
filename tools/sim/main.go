@@ -13,7 +13,7 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/Comcast/rulio/core"
+	"rulio/core"
 )
 
 var elapsedMinThreshold = flag.Duration("mintime",

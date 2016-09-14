@@ -40,8 +40,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Comcast/rulio/core"
-	. "github.com/Comcast/rulio/sys"
+	"rulio/core"
+	. "rulio/sys"
 )
 
 const APIVersion = "0.0.9"

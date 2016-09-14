@@ -32,11 +32,11 @@ import (
 	"sync"
 	"time"
 
-	"github.com/Comcast/rulio/core"
-	"github.com/Comcast/rulio/cron"
-	"github.com/Comcast/rulio/service"
-	"github.com/Comcast/rulio/storage/dynamodb"
-	"github.com/Comcast/rulio/sys"
+	"rulio/core"
+	"rulio/cron"
+	"rulio/service"
+	"rulio/storage/dynamodb"
+	"rulio/sys"
 )
 
 var genericFlags = flag.NewFlagSet("generic", flag.ExitOnError)

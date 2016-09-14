@@ -19,7 +19,7 @@ package cron
 import (
 	"errors"
 	"fmt"
-	"github.com/Comcast/rulio/core"
+	"rulio/core"
 )
 
 func getSchedule(ctx *core.Context, fact core.Map) (string, error) {

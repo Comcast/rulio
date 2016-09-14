@@ -23,7 +23,7 @@ import (
 	"testing"
 	"time"
 
-	core "github.com/Comcast/rulio/core"
+	core "rulio/core"
 
 	"github.com/AdRoll/goamz/dynamodb"
 )

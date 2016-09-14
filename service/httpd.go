@@ -33,7 +33,7 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/Comcast/rulio/core"
+	"rulio/core"
 
 	"gopkg.in/yaml.v2"
 )
