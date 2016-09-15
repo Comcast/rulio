@@ -22,8 +22,8 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"os"
 	"runtime"
-
 	"strconv"
 	"strings"
 	"sync"
@@ -590,4 +590,20 @@ func (t *Throttle) Submit(f func() error) error {
 	}
 
 	return ThrottleExhausted
+}
+
+func HaveProc() bool {
+	_, err := os.Stat("/proc")
+	if err != nil {
+		// Ever tried. Ever failed.
+		// No matter. Try Again.
+		// Fail again. Fail better.
+		//
+		// --Samuel Becket
+		return false
+	}
+	if os.IsNotExist(err) {
+		return false
+	}
+	return true
 }

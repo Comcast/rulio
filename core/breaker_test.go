@@ -59,6 +59,9 @@ func BenchmarkOutboundBreaker(b *testing.B) {
 }
 
 func TestCPULoad(t *testing.T) {
+	if !HaveProc() {
+		t.Skip()
+	}
 	min1, min5, min15, err := CPULoad()
 	if err != nil {
 		t.Fatal(err)
@@ -67,6 +70,10 @@ func TestCPULoad(t *testing.T) {
 }
 
 func TestCPULoadProbe(t *testing.T) {
+	if !HaveProc() {
+		t.Skip()
+	}
+
 	load0, err := CPULoadProbe()
 	if err != nil {
 		t.Fatal(err)
@@ -89,6 +96,10 @@ func TestCPULoadProbe(t *testing.T) {
 }
 
 func TestComboBreaker(t *testing.T) {
+	if !HaveProc() {
+		t.Skip()
+	}
+
 	loadLimit := 0.5 * float64(runtime.NumCPU())
 	cpu := NewSimpleBreaker(CPULoadProbe, loadLimit)
 	gos := GoroutineBreaker(10000)
