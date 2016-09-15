@@ -599,7 +599,7 @@ func HaveProc() bool {
 		// No matter. Try Again.
 		// Fail again. Fail better.
 		//
-		// --Samuel Becket
+		// --Samuel Beckett
 		return false
 	}
 	if os.IsNotExist(err) {

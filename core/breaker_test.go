@@ -80,7 +80,7 @@ func TestCPULoadProbe(t *testing.T) {
 	}
 
 	for i := 0; i < 3; i++ {
-		time.Sleep(50 * time.Millisecond)
+		time.Sleep(10 * time.Millisecond)
 
 		// The cached value should not have expired.
 		load1, err := CPULoadProbe()
