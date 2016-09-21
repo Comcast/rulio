@@ -56,6 +56,15 @@ var storageType = engineFlags.String("storage", "mem", "storage type")
 var storageConfig = engineFlags.String("storage-config", "", "storage config")
 var bashActions = engineFlags.Bool("bash-actions", false, "enable Bash script actions")
 
+var (
+	nanomsgIn        = engineFlags.String("nanomsg-in", "", "URL for in-bound requests via Nanomsg")
+	nanomsgInPrefix  = engineFlags.String("nanomsg-in-prefix", "", "Prefix for in-bound requests via Nanomsg")
+	nanomsgOut       = engineFlags.String("nanomsg-out", "", "URL for publishing results via Nanomsg")
+	nanomsgOutPrefix = engineFlags.String("nanomsg-out-prefix", "", "Prefix for publishing results via Nanomsg")
+	nanomsgAux       = engineFlags.String("nanomsg-aux", "", "URL for Javascript nanomsg function publishing")
+	nanomsgAuxPrefix = engineFlags.String("nanomsg-aux-prefix", "", "Prefix for Javascript nanomsg function publishing")
+)
+
 var enginePort = engineFlags.String("engine-port", ":8001", "port engine will serve")
 var locationTTL = engineFlags.String("ttl", "forever", "Location TTL, a duration, 'forever', or 'never'")
 var cronURL = engineFlags.String("cron-url", "", "Optional URL for external cron service")
@@ -210,6 +219,31 @@ func engine(args []string, wg *sync.WaitGroup) []string {
 			panic(err)
 		}
 	}()
+
+	if *nanomsgIn != "" {
+		ns := &service.NanomsgService{
+			Ctx:        ctx,
+			Name:       "rulio",
+			Service:    engine,
+			FromURL:    *nanomsgIn,
+			FromPrefix: *nanomsgInPrefix,
+			ToURL:      *nanomsgOut,
+			ToPrefix:   *nanomsgOutPrefix,
+			AuxURL:     *nanomsgAux,
+			AuxPrefix:  *nanomsgAuxPrefix,
+		}
+		errs := make(chan error)
+		go func() {
+			for {
+				err := <-errs
+				if err != nil {
+					core.Log(core.WARN, ctx, "Nanomsg.Error", "error", err)
+				}
+			}
+		}()
+
+		ns.Go(errs)
+	}
 
 	return engineFlags.Args()
 }

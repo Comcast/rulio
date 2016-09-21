@@ -110,7 +110,7 @@ func CachedSlurp(ctx *Context, url string) (string, error) {
 }
 
 // Suggested at https://github.com/robertkrimen/otto/issues/17.
-func throwJavascript(value otto.Value, _ error) otto.Value {
+func ThrowJavascript(value otto.Value, _ error) otto.Value {
 	panic(value)
 }
 
@@ -145,27 +145,27 @@ func LocationFunctions(ctx *Context, loc *Location, runtime *otto.Otto, env map[
 		Log(DEBUG, ctx, "Javascript.AddFact")
 		id, err := call.Argument(0).ToString()
 		if err != nil {
-			throwJavascript(call.Otto.Call("new Error", nil, "No id (first arg) given"))
+			ThrowJavascript(call.Otto.Call("new Error", nil, "No id (first arg) given"))
 		}
 
 		x, err := call.Argument(1).Export()
 		if err != nil {
-			throwJavascript(call.Otto.Call("new Error", nil, "No object (second arg) given"))
+			ThrowJavascript(call.Otto.Call("new Error", nil, "No object (second arg) given"))
 		}
 
 		m, ok := x.(map[string]interface{})
 		if !ok {
-			throwJavascript(call.Otto.Call("new Error", nil, "Bad object (second arg) given"))
+			ThrowJavascript(call.Otto.Call("new Error", nil, "Bad object (second arg) given"))
 		}
 
 		i, err := loc.AddFact(ctx, id, Map(m))
 		if err != nil {
-			throwJavascript(call.Otto.Call("new Error", nil, err.Error()))
+			ThrowJavascript(call.Otto.Call("new Error", nil, err.Error()))
 		}
 
 		result, err := runtime.ToValue(i)
 		if err != nil {
-			throwJavascript(call.Otto.Call("new Error", nil, err.Error()))
+			ThrowJavascript(call.Otto.Call("new Error", nil, err.Error()))
 		}
 
 		return result
@@ -176,27 +176,27 @@ func LocationFunctions(ctx *Context, loc *Location, runtime *otto.Otto, env map[
 		Log(DEBUG, ctx, "Javascript.AddRule")
 		id, err := call.Argument(0).ToString()
 		if err != nil {
-			throwJavascript(call.Otto.Call("new Error", nil, "No id (first arg) given"))
+			ThrowJavascript(call.Otto.Call("new Error", nil, "No id (first arg) given"))
 		}
 
 		x, err := call.Argument(1).Export()
 		if err != nil {
-			throwJavascript(call.Otto.Call("new Error", nil, "No object (second arg) given"))
+			ThrowJavascript(call.Otto.Call("new Error", nil, "No object (second arg) given"))
 		}
 
 		m, ok := x.(map[string]interface{})
 		if !ok {
-			throwJavascript(call.Otto.Call("new Error", nil, "Bad object (second arg) given"))
+			ThrowJavascript(call.Otto.Call("new Error", nil, "Bad object (second arg) given"))
 		}
 
 		i, err := loc.AddRule(ctx, id, Map(m))
 		if err != nil {
-			throwJavascript(call.Otto.Call("new Error", nil, err.Error()))
+			ThrowJavascript(call.Otto.Call("new Error", nil, err.Error()))
 		}
 
 		result, err := runtime.ToValue(i)
 		if err != nil {
-			throwJavascript(call.Otto.Call("new Error", nil, err.Error()))
+			ThrowJavascript(call.Otto.Call("new Error", nil, err.Error()))
 		}
 
 		return result
@@ -207,22 +207,22 @@ func LocationFunctions(ctx *Context, loc *Location, runtime *otto.Otto, env map[
 		Log(DEBUG, ctx, "Javascript.ProcessEvent")
 		x, err := call.Argument(0).Export()
 		if err != nil {
-			throwJavascript(call.Otto.Call("new Error", nil, "No object (first arg) given"))
+			ThrowJavascript(call.Otto.Call("new Error", nil, "No object (first arg) given"))
 		}
 
 		m, ok := x.(map[string]interface{})
 		if !ok {
-			throwJavascript(call.Otto.Call("new Error", nil, "Bad object (first arg) given"))
+			ThrowJavascript(call.Otto.Call("new Error", nil, "Bad object (first arg) given"))
 		}
 
 		ews, err := loc.ProcessEvent(ctx, Map(m))
 		if err != nil {
-			throwJavascript(call.Otto.Call("new Error", nil, err.Error()))
+			ThrowJavascript(call.Otto.Call("new Error", nil, err.Error()))
 		}
 
 		result, err := runtime.ToValue(ews)
 		if err != nil {
-			throwJavascript(call.Otto.Call("new Error", nil, err.Error()))
+			ThrowJavascript(call.Otto.Call("new Error", nil, err.Error()))
 		}
 
 		return result
@@ -233,23 +233,23 @@ func LocationFunctions(ctx *Context, loc *Location, runtime *otto.Otto, env map[
 		Log(DEBUG, ctx, "Javascript.Search")
 		x, err := call.Argument(0).Export()
 		if err != nil {
-			throwJavascript(call.Otto.Call("new Error", nil, "No object (first arg) given"))
+			ThrowJavascript(call.Otto.Call("new Error", nil, "No object (first arg) given"))
 		}
 
 		m, ok := x.(map[string]interface{})
 		if !ok {
-			throwJavascript(call.Otto.Call("new Error", nil, "Bad object (first arg) given"))
+			ThrowJavascript(call.Otto.Call("new Error", nil, "Bad object (first arg) given"))
 		}
 
 		srs, err := loc.SearchFacts(ctx, m, true)
 
 		if err != nil {
-			throwJavascript(call.Otto.Call("new Error", nil, err.Error()))
+			ThrowJavascript(call.Otto.Call("new Error", nil, err.Error()))
 		}
 
 		result, err := runtime.ToValue(srs)
 		if err != nil {
-			throwJavascript(call.Otto.Call("new Error", nil, err.Error()))
+			ThrowJavascript(call.Otto.Call("new Error", nil, err.Error()))
 		}
 
 		return result
@@ -260,22 +260,22 @@ func LocationFunctions(ctx *Context, loc *Location, runtime *otto.Otto, env map[
 		Log(DEBUG, ctx, "Javascript.Query")
 		m, err := call.Argument(0).Export()
 		if err != nil {
-			throwJavascript(call.Otto.Call("new Error", nil, "No object (first arg) given"))
+			ThrowJavascript(call.Otto.Call("new Error", nil, "No object (first arg) given"))
 		}
 
 		js, err := json.Marshal(&m)
 		if err != nil {
-			throwJavascript(call.Otto.Call("new Error", nil, "Bad object (first arg) given"))
+			ThrowJavascript(call.Otto.Call("new Error", nil, "Bad object (first arg) given"))
 		}
 
 		qr, err := loc.Query(ctx, string(js))
 		if err != nil {
-			throwJavascript(call.Otto.Call("new Error", nil, err.Error()))
+			ThrowJavascript(call.Otto.Call("new Error", nil, err.Error()))
 		}
 
 		result, err := runtime.ToValue(qr)
 		if err != nil {
-			throwJavascript(call.Otto.Call("new Error", nil, err.Error()))
+			ThrowJavascript(call.Otto.Call("new Error", nil, err.Error()))
 		}
 
 		return result
@@ -286,17 +286,17 @@ func LocationFunctions(ctx *Context, loc *Location, runtime *otto.Otto, env map[
 		Log(DEBUG, ctx, "Javascript.RemFact")
 		id, err := call.Argument(0).ToString()
 		if err != nil {
-			throwJavascript(call.Otto.Call("new Error", nil, "No id (first arg) given"))
+			ThrowJavascript(call.Otto.Call("new Error", nil, "No id (first arg) given"))
 		}
 
 		i, err := loc.RemFact(ctx, id)
 		if err != nil {
-			throwJavascript(call.Otto.Call("new Error", nil, err.Error()))
+			ThrowJavascript(call.Otto.Call("new Error", nil, err.Error()))
 		}
 
 		result, err := runtime.ToValue(i)
 		if err != nil {
-			throwJavascript(call.Otto.Call("new Error", nil, err.Error()))
+			ThrowJavascript(call.Otto.Call("new Error", nil, err.Error()))
 		}
 
 		return result
@@ -307,17 +307,17 @@ func LocationFunctions(ctx *Context, loc *Location, runtime *otto.Otto, env map[
 		Log(DEBUG, ctx, "Javascript.RemRule")
 		id, err := call.Argument(0).ToString()
 		if err != nil {
-			throwJavascript(call.Otto.Call("new Error", nil, "No id (first arg) given"))
+			ThrowJavascript(call.Otto.Call("new Error", nil, "No id (first arg) given"))
 		}
 
 		i, err := loc.RemRule(ctx, id)
 		if err != nil {
-			throwJavascript(call.Otto.Call("new Error", nil, err.Error()))
+			ThrowJavascript(call.Otto.Call("new Error", nil, err.Error()))
 		}
 
 		result, err := runtime.ToValue(i)
 		if err != nil {
-			throwJavascript(call.Otto.Call("new Error", nil, err.Error()))
+			ThrowJavascript(call.Otto.Call("new Error", nil, err.Error()))
 		}
 
 		return result
@@ -369,13 +369,13 @@ func jsFun_http(ctx *Context, runtime *otto.Otto, env map[string]interface{}) fu
 		res, err := req.Do(ctx)
 		if nil != err {
 			Log(ERROR, ctx, "jsFun_http", "error", err)
-			throwJavascript(call.Otto.Call("new Error", nil, res.Error))
+			ThrowJavascript(call.Otto.Call("new Error", nil, res.Error))
 		}
 
 		result, err := runtime.ToValue(res.Body)
 		if err != nil {
 			Log(ERROR, ctx, "jsFun_http", "error", err)
-			throwJavascript(call.Otto.Call("new Error", nil, err.Error()))
+			ThrowJavascript(call.Otto.Call("new Error", nil, err.Error()))
 		}
 		Log(DEBUG, ctx, "jsFun_http", "got", result)
 
@@ -393,16 +393,16 @@ func jsFun_httpx(ctx *Context, runtime *otto.Otto, env map[string]interface{}) f
 
 		spec, err := call.Argument(0).Export()
 		if err != nil {
-			throwJavascript(call.Otto.Call("new Error", nil, err.Error()))
+			ThrowJavascript(call.Otto.Call("new Error", nil, err.Error()))
 		}
 		if spec == nil {
-			throwJavascript(call.Otto.Call("new Error", nil, "no spec arg"))
+			ThrowJavascript(call.Otto.Call("new Error", nil, "no spec arg"))
 		}
 
 		// Shameful
 		js, err := json.Marshal(&spec)
 		if err != nil {
-			throwJavascript(call.Otto.Call("new Error", nil, err.Error()))
+			ThrowJavascript(call.Otto.Call("new Error", nil, err.Error()))
 		}
 		Log(DEBUG, ctx, "jsFun_httpx", "spec", string(js))
 
@@ -410,17 +410,17 @@ func jsFun_httpx(ctx *Context, runtime *otto.Otto, env map[string]interface{}) f
 		request.Method = "GET"
 		request.ContentType = "application/json"
 		if err = json.Unmarshal(js, &request); err != nil {
-			throwJavascript(call.Otto.Call("new Error", nil, err.Error()))
+			ThrowJavascript(call.Otto.Call("new Error", nil, err.Error()))
 		}
 
 		var result HTTPResult
 		if err = request.DoOnce(ctx, &result); err != nil {
-			throwJavascript(call.Otto.Call("new Error", nil, err.Error()))
+			ThrowJavascript(call.Otto.Call("new Error", nil, err.Error()))
 		}
 
 		v, err := runtime.ToValue(&result)
 		if err != nil {
-			throwJavascript(call.Otto.Call("new Error", nil, err.Error()))
+			ThrowJavascript(call.Otto.Call("new Error", nil, err.Error()))
 		}
 		return v
 	}
@@ -560,18 +560,18 @@ func RunJavascript(ctx *Context, bs *Bindings, props map[string]interface{}, src
 			x, err := call.Argument(0).Export()
 			if err != nil {
 				Log(WARN, ctx, "core.RunJavascript", "f", "exec", "call", call, "error", err)
-				throwJavascript(call.Otto.Call("new Error", nil, err.Error()))
+				ThrowJavascript(call.Otto.Call("new Error", nil, err.Error()))
 			}
 			cs := CommandSpec{}
 			if err = cs.Set(x); err != nil {
 				Log(WARN, ctx, "core.RunJavascript", "f", "exec", "call", call, "error", err)
-				throwJavascript(call.Otto.Call("new Error", nil, err.Error()))
+				ThrowJavascript(call.Otto.Call("new Error", nil, err.Error()))
 			}
 			cs.Exec(ctx)
 			result, err := runtime.ToValue(&cs)
 			if err != nil {
 				Log(WARN, ctx, "core.RunJavascript", "f", "exec", "call", call, "error", err)
-				throwJavascript(call.Otto.Call("new Error", nil, err.Error()))
+				ThrowJavascript(call.Otto.Call("new Error", nil, err.Error()))
 			}
 			return result
 		}
@@ -586,18 +586,18 @@ func RunJavascript(ctx *Context, bs *Bindings, props map[string]interface{}, src
 			s, err := call.Argument(0).ToString()
 			if err != nil {
 				Log(WARN, ctx, "core.RunJavascript", "f", "bash", "call", call, "error", err)
-				throwJavascript(call.Otto.Call("new Error", nil, err.Error()))
+				ThrowJavascript(call.Otto.Call("new Error", nil, err.Error()))
 			}
 			cs := CommandSpec{}
 			opts, err := call.Argument(1).Export()
 			if err != nil {
 				Log(WARN, ctx, "core.RunJavascript", "f", "exec", "call", call, "error", err)
-				throwJavascript(call.Otto.Call("new Error", nil, err.Error()))
+				ThrowJavascript(call.Otto.Call("new Error", nil, err.Error()))
 			}
 			if opts != nil {
 				if err = cs.Set(opts); err != nil {
 					Log(WARN, ctx, "core.RunJavascript", "f", "exec", "call", call, "error", err)
-					throwJavascript(call.Otto.Call("new Error", nil, err.Error()))
+					ThrowJavascript(call.Otto.Call("new Error", nil, err.Error()))
 				}
 			}
 
@@ -609,7 +609,7 @@ func RunJavascript(ctx *Context, bs *Bindings, props map[string]interface{}, src
 			result, err := runtime.ToValue(&cs)
 			if err != nil {
 				Log(WARN, ctx, "core.RunJavascript", "f", "bash", "call", call, "error", err)
-				throwJavascript(call.Otto.Call("new Error", nil, err.Error()))
+				ThrowJavascript(call.Otto.Call("new Error", nil, err.Error()))
 			}
 			return result
 		}
@@ -622,12 +622,12 @@ func RunJavascript(ctx *Context, bs *Bindings, props map[string]interface{}, src
 		body, err := CachedSlurp(ctx, s)
 		if err != nil {
 			Log(WARN, ctx, "core.RunJavascript", "f", "getc", "call", call, "error", err)
-			throwJavascript(call.Otto.Call("new Error", nil, err.Error()))
+			ThrowJavascript(call.Otto.Call("new Error", nil, err.Error()))
 		}
 		result, err := runtime.ToValue(body)
 		if err != nil {
 			Log(WARN, ctx, "core.RunJavascript", "f", "get", "call", call, "error", err)
-			throwJavascript(call.Otto.Call("new Error", nil, err.Error()))
+			ThrowJavascript(call.Otto.Call("new Error", nil, err.Error()))
 		}
 		return result
 	}
@@ -639,12 +639,12 @@ func RunJavascript(ctx *Context, bs *Bindings, props map[string]interface{}, src
 		body, err := Slurp(ctx, s)
 		if err != nil {
 			Log(WARN, ctx, "core.RunJavascript", "f", "get", "call", call, "error", err)
-			throwJavascript(call.Otto.Call("new Error", nil, err.Error()))
+			ThrowJavascript(call.Otto.Call("new Error", nil, err.Error()))
 		}
 		result, err := runtime.ToValue(body)
 		if err != nil {
 			Log(WARN, ctx, "core.RunJavascript", "f", "get", "call", call, "error", err)
-			throwJavascript(call.Otto.Call("new Error", nil, err.Error()))
+			ThrowJavascript(call.Otto.Call("new Error", nil, err.Error()))
 		}
 		return result
 	}
@@ -656,7 +656,7 @@ func RunJavascript(ctx *Context, bs *Bindings, props map[string]interface{}, src
 		result, err := runtime.ToValue(body)
 		if err != nil {
 			Log(WARN, ctx, "core.RunJavascript", "f", "encode", "call", call, "error", err)
-			throwJavascript(call.Otto.Call("new Error", nil, err.Error()))
+			ThrowJavascript(call.Otto.Call("new Error", nil, err.Error()))
 		}
 		return result
 	}
@@ -680,7 +680,7 @@ func RunJavascript(ctx *Context, bs *Bindings, props map[string]interface{}, src
 		}
 
 		if err != nil {
-			throwJavascript(call.Otto.Call("new Error", nil, err.Error()))
+			ThrowJavascript(call.Otto.Call("new Error", nil, err.Error()))
 		}
 		result, _ := runtime.ToValue(true)
 		return result
@@ -691,18 +691,18 @@ func RunJavascript(ctx *Context, bs *Bindings, props map[string]interface{}, src
 		s, err := call.Argument(0).ToString()
 		if err != nil {
 			Log(WARN, ctx, "core.RunJavascript", "f", "encode", "call", call, "error", err)
-			throwJavascript(call.Otto.Call("new Error", nil, err.Error()))
+			ThrowJavascript(call.Otto.Call("new Error", nil, err.Error()))
 		}
 		then, err := time.Parse(time.RFC3339, s)
 		if err != nil {
 			Log(WARN, ctx, "core.RunJavascript", "f", "encode", "call", call, "error", err)
-			throwJavascript(call.Otto.Call("new Error", nil, err.Error()))
+			ThrowJavascript(call.Otto.Call("new Error", nil, err.Error()))
 		}
 		secs := time.Now().Sub(then).Seconds()
 		result, err := runtime.ToValue(secs)
 		if err != nil {
 			Log(WARN, ctx, "core.RunJavascript", "f", "encode", "call", call, "error", err)
-			throwJavascript(call.Otto.Call("new Error", nil, err.Error()))
+			ThrowJavascript(call.Otto.Call("new Error", nil, err.Error()))
 		}
 		return result
 	}
@@ -739,11 +739,11 @@ func RunJavascript(ctx *Context, bs *Bindings, props map[string]interface{}, src
 	// 	variable, err := call.Argument(0).ToString()
 	// 	// Don't know how to throw an exception.
 	// 	if err != nil {
-	// 		throwJavascript(call.Otto.Call("new Error", nil, err.Error()))
+	// 		ThrowJavascript(call.Otto.Call("new Error", nil, err.Error()))
 	// 	}
 	// 	val, err := call.Argument(1).Export()
 	// 	if err != nil {
-	// 		throwJavascript(call.Otto.Call("new Error", nil, err.Error()))
+	// 		ThrowJavascript(call.Otto.Call("new Error", nil, err.Error()))
 	// 	}
 	// 	moreBindings["?" + variable] = val
 	// 	return call.Argument(0)
@@ -761,7 +761,7 @@ func RunJavascript(ctx *Context, bs *Bindings, props map[string]interface{}, src
 	env["getJavascriptTestValue"] = func(call otto.FunctionCall) otto.Value {
 		x, err := runtime.ToValue(JavascriptTestValue)
 		if err != nil {
-			throwJavascript(call.Otto.Call("new Error", nil, err.Error()))
+			ThrowJavascript(call.Otto.Call("new Error", nil, err.Error()))
 		}
 		return x
 	}
@@ -771,19 +771,19 @@ func RunJavascript(ctx *Context, bs *Bindings, props map[string]interface{}, src
 		pat, err := call.Argument(0).Export()
 		if err != nil {
 			Log(WARN, ctx, "core.RunJavascript", "f", "0.Export", "warning", err)
-			throwJavascript(call.Otto.Call("new Error", nil, err.Error()))
+			ThrowJavascript(call.Otto.Call("new Error", nil, err.Error()))
 		}
 		Log(DEBUG, ctx, "core.RunJavascript", "f", "match", "pat", pat, "type", fmt.Sprintf("%T", pat))
 		fact, err := call.Argument(1).Export()
 		if err != nil {
 			Log(WARN, ctx, "core.RunJavascript", "f", "1.Export", "warning", err)
-			throwJavascript(call.Otto.Call("new Error", nil, err.Error()))
+			ThrowJavascript(call.Otto.Call("new Error", nil, err.Error()))
 		}
 		Log(DEBUG, ctx, "core.RunJavascript", "f", "match", "facti", logFacti(fact), "type", fmt.Sprintf("%T", fact))
 		bss, err := Matches(ctx, pat, fact)
 		if err != nil {
 			Log(WARN, ctx, "core.RunJavascript", "f", "Matches", "warning", err)
-			throwJavascript(call.Otto.Call("new Error", nil, err.Error()))
+			ThrowJavascript(call.Otto.Call("new Error", nil, err.Error()))
 		}
 		Log(DEBUG, ctx, "core.RunJavascript", "f", "match", "bss", bss)
 		// matched := 0 < len(bss)
@@ -791,7 +791,7 @@ func RunJavascript(ctx *Context, bs *Bindings, props map[string]interface{}, src
 		result, err := runtime.ToValue(bss)
 		if err != nil {
 			Log(WARN, ctx, "core.RunJavascript", "f", "ToValue", "error", err)
-			throwJavascript(call.Otto.Call("new Error", nil, err.Error()))
+			ThrowJavascript(call.Otto.Call("new Error", nil, err.Error()))
 		}
 		return result
 	}
@@ -805,7 +805,7 @@ func RunJavascript(ctx *Context, bs *Bindings, props map[string]interface{}, src
 	// 	library, err := call.Argument(1).ToString()
 	// 	if err != nil {
 	// 		Log(WARN, ctx, "core.RunJavascript", "f", "0.Export", "warning", err)
-	// 		throwJavascript(call.Otto.Call("new Error", nil, err.Error()))
+	// 		ThrowJavascript(call.Otto.Call("new Error", nil, err.Error()))
 	// 	}
 	// 	Log(DEBUG, ctx, "core.RunJavascript", "f", "require", "library", library)
 
@@ -814,20 +814,20 @@ func RunJavascript(ctx *Context, bs *Bindings, props map[string]interface{}, src
 	// 		uri, err = ctx.GetLoc().ResolveService(ctx, library)
 	// 		if err != nil {
 	// 			Log(WARN, ctx, "core.RunJavascript", "f", "require", "warning", err)
-	// 			throwJavascript(call.Otto.Call("new Error", nil, err.Error()))
+	// 			ThrowJavascript(call.Otto.Call("new Error", nil, err.Error()))
 	// 		}
 	// 	}
 
 	// 	code, err := CachedSlurp(ctx, uri)
 	// 	if err != nil {
 	// 		Log(WARN, ctx, "core.RunJavascript", "f", "require", "warning", err)
-	// 		throwJavascript(call.Otto.Call("new Error", nil, err.Error()))
+	// 		ThrowJavascript(call.Otto.Call("new Error", nil, err.Error()))
 	// 	}
 
 	// 	result, err := runtime.Run(code)
 	// 	if err != nil {
 	// 		Log(WARN, ctx, "core.RunJavascript", "f", "ToValue", "error", err)
-	// 		throwJavascript(call.Otto.Call("new Error", nil, err.Error()))
+	// 		ThrowJavascript(call.Otto.Call("new Error", nil, err.Error()))
 	// 	}
 
 	// 	return result

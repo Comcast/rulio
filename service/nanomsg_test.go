@@ -22,10 +22,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Comcast/rulio/core"
 	"github.com/Comcast/rulio/sys"
-
-	"github.com/robertkrimen/otto"
 
 	"github.com/go-mangos/mangos"
 	"github.com/go-mangos/mangos/protocol/pub"
@@ -52,42 +49,6 @@ func TestNanomsg(t *testing.T) {
 
 		sys, ctx := sys.ExampleSystem("Test")
 
-		// Let's make a Nanomsg-emitting function we can call from Javascript.
-
-		sock, err := pub.NewSocket()
-		if err != nil {
-			t.Fatal(err)
-		}
-		sock.AddTransport(ipc.NewTransport())
-		sock.AddTransport(tcp.NewTransport())
-		if err = sock.Listen(aux); err != nil {
-			t.Fatal(err)
-		}
-
-		emit := func(msg string) {
-			msg = auxPrefix + ":" + msg
-			log.Printf("emitting '%s'", msg)
-			if err = sock.Send([]byte(msg)); err != nil {
-				t.Fatal(err)
-			}
-		}
-
-		// Let's define a Javascript function that will allow
-		// us to publish to 'aux'.
-		ctx.App = &core.BindingApp{
-			JavascriptBindings: map[string]interface{}{
-				"nanomsg": func(call otto.FunctionCall) otto.Value {
-					x := call.Argument(0)
-					msg, err := x.ToString()
-					if err != nil {
-						t.Fatal(err)
-					} else {
-						emit(msg)
-					}
-					return x
-				},
-			},
-		}
 		service := &Service{
 			System: sys,
 		}
@@ -99,6 +60,8 @@ func TestNanomsg(t *testing.T) {
 			Service:    service,
 			ToURL:      out,
 			ToPrefix:   outboundPrefix,
+			AuxURL:     aux,
+			AuxPrefix:  auxPrefix,
 		}
 		errs := make(chan error)
 		go func() {

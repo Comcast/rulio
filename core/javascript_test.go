@@ -21,6 +21,8 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/robertkrimen/otto"
 )
 
 func TestJavascript(t *testing.T) {
@@ -273,9 +275,31 @@ func TestJavascriptExec(t *testing.T) {
 
 }
 
+type TestBindingApp struct {
+	bindings map[string]interface{}
+}
+
+func (ba *TestBindingApp) GenerateHeaders(ctx *Context) map[string]string {
+	return nil
+}
+
+func (ba *TestBindingApp) ProcessBindings(ctx *Context, bs Bindings) Bindings {
+	for k, v := range ba.bindings {
+		if _, have := bs[k]; !have {
+			bs[k] = v
+		}
+	}
+	return bs
+}
+
+func (ba *TestBindingApp) UpdateJavascriptRuntime(ctx *Context, runtime *otto.Otto) error {
+	runtime.Set("Napoleon", "Dynamite")
+	return nil
+}
+
 func TestJavascriptAppUpdate(t *testing.T) {
 	ctx := TestContext("Test")
-	ctx.App = &BindingApp{}
+	ctx.App = &TestBindingApp{}
 	got, err := RunJavascript(ctx, nil, nil, "Napoleon")
 	if err != nil {
 		t.Fatal(err)

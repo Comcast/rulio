@@ -19,6 +19,7 @@ package service
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"log"
 
 	"github.com/Comcast/rulio/core"
@@ -28,6 +29,8 @@ import (
 	"github.com/go-mangos/mangos/protocol/sub"
 	"github.com/go-mangos/mangos/transport/ipc"
 	"github.com/go-mangos/mangos/transport/tcp"
+
+	"github.com/robertkrimen/otto"
 )
 
 // NanomsgService provided Nanomsg pub/sub transport around a rules
@@ -57,14 +60,29 @@ type NanomsgService struct {
 	// ToPrefix is an optional message prefix for those outbound
 	// results published to ToURL (if given).
 	ToPrefix string
+
+	// AuxURL is an optional URL for publishing messages via the
+	// Javascript 'nanomsg' function.
+	AuxURL string
+
+	// AuxPrefix is an optional message prefix for messages
+	// published via the Javascript 'nanomsg' function.
+	AuxPrefix string
 }
 
-// Go starts a listener in a new goroutine.
+// go starts a listener in a new goroutine.
 //
 // Provide a channel of errors if you want to learn about problems.
 //
 // Close the returned channel to stop the listener.
 func (ns *NanomsgService) Go(errs chan error) (error, chan bool) {
+
+	core.Log(core.INFO, ns.Ctx, "service.NanomsgService", "from", ns.FromURL, "fromPrefix", ns.FromPrefix)
+	core.Log(core.INFO, ns.Ctx, "service.NanomsgService", "to", ns.ToURL, "toPrefix", ns.ToPrefix)
+
+	if err := ns.initAux(); err != nil {
+		return err, nil
+	}
 
 	// See https://github.com/go-mangos/mangos/blob/master/examples/pubsub/pubsub.go
 
@@ -158,4 +176,54 @@ func (ns *NanomsgService) Go(errs chan error) (error, chan bool) {
 	}()
 
 	return nil, ctl
+}
+
+func (ns *NanomsgService) initAux() error {
+	if ns.AuxURL == "" {
+		return nil
+	}
+
+	core.Log(core.INFO, ns.Ctx, "service.NanomsgService", "aus", ns.AuxURL, "toPrefix", ns.AuxPrefix)
+
+	sock, err := pub.NewSocket()
+	if err != nil {
+		return err
+	}
+	sock.AddTransport(ipc.NewTransport())
+	sock.AddTransport(tcp.NewTransport())
+	if err = sock.Listen(ns.AuxURL); err != nil {
+		return err
+	}
+
+	emit := func(msg string) error {
+		if ns.AuxPrefix != "" {
+			msg = ns.AuxPrefix + ":" + msg
+		}
+		log.Printf("emitting '%s'", msg)
+		if err = sock.Send([]byte(msg)); err != nil {
+			return err
+		}
+		return nil
+	}
+
+	// Let's define a Javascript function that will allow
+	// us to publish to 'aux'.
+	ns.Ctx.App = &core.BindingApp{
+		JavascriptBindings: map[string]interface{}{
+			"nanomsg": func(call otto.FunctionCall) otto.Value {
+				x := call.Argument(0)
+				msg, err := x.ToString()
+				if err != nil {
+					core.ThrowJavascript(call.Otto.Call("new Error", nil, fmt.Sprintf("No bad first arg: %v", err)))
+				} else {
+					if err = emit(msg); err != nil {
+						core.ThrowJavascript(call.Otto.Call("new Error", nil, err.Error()))
+					}
+				}
+				return x
+			},
+		},
+	}
+
+	return nil
 }
