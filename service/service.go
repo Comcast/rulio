@@ -80,6 +80,11 @@ func DWIMURI(ctx *core.Context, uri string) string {
 	// Strip any pesky version, which we can ignore at the momemnt.
 	dropVersion, _ := regexp.Compile("^/v?[.0-9]+")
 	uri = dropVersion.ReplaceAllString(uri, "")
+
+	// Make sure we have a leading slash.
+	if uri[0] != '/' {
+		uri = "/" + uri
+	}
 	if !strings.HasPrefix(uri, "/api") {
 		uri = "/api" + uri
 	}

@@ -32,6 +32,34 @@ type App interface {
 	UpdateJavascriptRuntime(ctx *Context, runtime *otto.Otto) error
 }
 
+// BindingApp is an implementation of App just for extending logic
+// variable bindings or injecting bindings into the Javascript
+// environment.
+type BindingApp struct {
+	Bindings           map[string]interface{}
+	JavascriptBindings map[string]interface{}
+}
+
+func (ba *BindingApp) GenerateHeaders(ctx *Context) map[string]string {
+	return nil
+}
+
+func (ba *BindingApp) ProcessBindings(ctx *Context, bs Bindings) Bindings {
+	for k, v := range ba.Bindings {
+		if _, have := bs[k]; !have {
+			bs[k] = v
+		}
+	}
+	return bs
+}
+
+func (ba *BindingApp) UpdateJavascriptRuntime(ctx *Context, runtime *otto.Otto) error {
+	for k, v := range ba.JavascriptBindings {
+		runtime.Set(k, v)
+	}
+	return nil
+}
+
 type Context struct {
 	sync.RWMutex
 

@@ -20,8 +20,6 @@ import (
 	"fmt"
 	"testing"
 	"time"
-
-	"github.com/robertkrimen/otto"
 )
 
 func TestEventBasic(t *testing.T) {
@@ -155,7 +153,7 @@ func TestEventEmbedded(t *testing.T) {
 func TestEventWithAppBinding(t *testing.T) {
 	ctx, loc := TestingLocation(t)
 	ctx.App = &BindingApp{
-		map[string]interface{}{
+		Bindings: map[string]interface{}{
 			"brand": "Duff",
 		},
 	}
@@ -204,28 +202,6 @@ func TestEventWithAppBinding(t *testing.T) {
 	case <-time.After(5 * 1e9):
 		t.Fatal("timeout")
 	}
-}
-
-type BindingApp struct {
-	bindings map[string]interface{}
-}
-
-func (ba *BindingApp) GenerateHeaders(ctx *Context) map[string]string {
-	return nil
-}
-
-func (ba *BindingApp) ProcessBindings(ctx *Context, bs Bindings) Bindings {
-	for k, v := range ba.bindings {
-		if _, have := bs[k]; !have {
-			bs[k] = v
-		}
-	}
-	return bs
-}
-
-func (ba *BindingApp) UpdateJavascriptRuntime(ctx *Context, runtime *otto.Otto) error {
-	runtime.Set("Napoleon", "Dynamite")
-	return nil
 }
 
 func TestEventConditionBindings(t *testing.T) {
