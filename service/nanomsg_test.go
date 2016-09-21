@@ -35,12 +35,15 @@ import (
 )
 
 func TestNanomsg(t *testing.T) {
+	// Publish in-bound messages to
 	in := "tcp://127.0.0.1:40899"
 	inboundPrefix := "jokes"
 
+	// Publish message processing results to
 	out := "tcp://127.0.0.1:40900"
 	outboundPrefix := "insults"
 
+	// From Javascript, publish messages to
 	aux := "tcp://127.0.0.1:40901"
 	auxPrefix := "lies"
 
@@ -69,6 +72,8 @@ func TestNanomsg(t *testing.T) {
 			}
 		}
 
+		// Let's define a Javascript function that will allow
+		// us to publish to 'aux'.
 		ctx.App = &core.BindingApp{
 			JavascriptBindings: map[string]interface{}{
 				"nanomsg": func(call otto.FunctionCall) otto.Value {
@@ -109,8 +114,8 @@ func TestNanomsg(t *testing.T) {
 	}
 
 	{
-		// Start up another listener to hear what the rules
-		// service has to say when it does something
+		// Start up another listener for 'aux' to hear the
+		// results of message processing.
 
 		sock, err := sub.NewSocket()
 		if err != nil {
@@ -138,7 +143,8 @@ func TestNanomsg(t *testing.T) {
 	}
 
 	{
-		// Start up *another* listener to hear messages we emit from Javascript.
+		// Start up *another* listener to hear messages we
+		// emit from Javascript via the 'nanomsg' function.
 
 		sock, err := sub.NewSocket()
 		if err != nil {
@@ -166,6 +172,13 @@ func TestNanomsg(t *testing.T) {
 	}
 
 	// Start sending requests to the rules service (via Nanomsg).
+	// We are our own source of in-bound test messages.
+	//
+	// Note that we can perform *any* simple API call (not just
+	// event processing).  In this test, we'll execute some
+	// Javascript that will call our special 'nanomsg()' function.
+	// We'll also return a result, which should should also be
+	// emitted.
 
 	sock, err := pub.NewSocket()
 	if err != nil {
