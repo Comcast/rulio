@@ -53,7 +53,7 @@ var maxLocations = engineFlags.Int("max-locations", 1000, "Max locations")
 var maxFacts = engineFlags.Int("max-facts", 1000, "Max facts per location")
 var accVerbosity = engineFlags.String("acc-verbosity", "EVERYTHING", "Log accumulator verbosity.")
 var storageType = engineFlags.String("storage", "mem", "storage type")
-var storageConfig = engineFlags.String("storage-config", "", "storage config")
+var storageConfig = engineFlags.String("storage-config", "", "type-specific storage config")
 var bashActions = engineFlags.Bool("bash-actions", false, "enable Bash script actions")
 
 var enginePort = engineFlags.String("engine-port", ":8001", "port engine will serve")
@@ -67,8 +67,8 @@ var checkState = engineFlags.Bool("check-state", false, "Whether to check for st
 // This CLI exposes the complete storage API, so you can do surgery on
 // locations if you really want to.
 var storeFlags = flag.NewFlagSet("storage", flag.ExitOnError)
-var storeType = storeFlags.String("storage", "dynamodb", "storage type")
-var storeConfig = storeFlags.String("storage-config", "us-west-2:rulestest", "storage type")
+var storeType = storeFlags.String("storage", "bolt", "storage type")
+var storeConfig = storeFlags.String("storage-config", "rules.db", "type-specific storage config")
 var storeClose = storeFlags.Bool("close", false, "close storage")
 var storeHealth = storeFlags.Bool("health", false, "check storage health")
 
