@@ -287,7 +287,12 @@ should be evaluated.  The `when` value is ignored in this case.
 
 The schedule syntax can have three forms:
 
-1. A cron schedule string (supposedly in syntax at https://en.wikipedia.org/wiki/Cron#CRON_expression).
+1. A cron schedule string (supposedly in syntax at
+   https://en.wikipedia.org/wiki/Cron#CRON_expression).  More
+   precisely, Rulio uses
+   [`gorhill/cronexpr`](https://github.com/gorhill/cronexpr), which
+   describes
+   [its specific support](https://github.com/gorhill/cronexpr#implementation).
 
 2. "!TIME", where TIME is according to [RFC3339](https://www.ietf.org/rfc/rfc3339.txt).
 
