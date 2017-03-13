@@ -287,7 +287,12 @@ should be evaluated.  The `when` value is ignored in this case.
 
 The schedule syntax can have three forms:
 
-1. A cron schedule string (supposedly in syntax at https://en.wikipedia.org/wiki/Cron#CRON_expression).
+1. A cron schedule string (supposedly in syntax at
+   https://en.wikipedia.org/wiki/Cron#CRON_expression).  More
+   precisely, Rulio uses
+   [`gorhill/cronexpr`](https://github.com/gorhill/cronexpr), which
+   describes
+   [its specific support](https://github.com/gorhill/cronexpr#implementation).
 
 2. "!TIME", where TIME is according to [RFC3339](https://www.ietf.org/rfc/rfc3339.txt).
 
@@ -506,21 +511,15 @@ An engine can extend this environment (using `CodeProps` in
 `core.Control`).
 
 A Javascript action supports an optional `libraries` property on a
-optional `opts` property, which should have a map as a value.
-
-If the `opts` map has a `libraries` property, that value be an array
-of strings.  Each string should typically be a URL that will fetch
-Javascript.  (Results are cached with a TTL given by
-`core.SystemParameters.SlurpCacheTTL`, which defaults to 0s.  Also see
-`SlurpCacheSize` and `SlurpTimeout`.)  Alternately, the string can be
-a name that resolves to a URL via a location's `GetConfig().Libraries`
-map.  See "Javascript libraries" in the top-level README for an
-example use.  Also the `examples/` use a library or two.
-
-If the `opts` map has an `encoding` property, that encoding specifies
-the encoding used for the action's `code` when the action in an
-in-process Javascript action.  Currently the only supporting encodings
-are "none" and "base64".
+optional `opts` property.  The `libraries` property, if given, should
+have a value (if any) that's an array of strings.  Each string should
+typically be a URL that will fetch Javascript.  (Results are cached
+with a TTL given by `core.SystemParameters.SlurpCacheTTL`, which
+defaults to 0s.  Also see `SlurpCacheSize` and `SlurpTimeout`.)
+Alternately, the string can be a name that resolves to a URL via a
+location's `GetConfig().Libraries` map.  See "Javascript libraries" in
+the top-level README for an example use.  Also the `examples/` use a
+library or two.
 
 A System can control a locations' `JavascriptTimeout`.  See
 `Location.Control`, `System.SystemApp.DefaultLocControl` and
@@ -575,7 +574,7 @@ as a set, not a list or array.
 The API `GetParents()` gets a location's parents (if any).
 
 This parents data is represented as fact (though it has special
-"property" indexing to make read access more efficient):
+"property" indexing to make read access more efficient):x
 
 ```Javascript
 {"!parent":["homer","marge"]}
@@ -595,10 +594,6 @@ or
 {"pattern":{"!parents":"?parents"}}
 ```
 
-The network API `/api/loc/parents` can be used to get or set the
-parents.  Provide the parameter `set` with a value that's a JSON
-representation of an array of strings to set a location's parents.
-With no paramters, the function returns the current parents.
 
 A location can disable an inherited rule.
 
