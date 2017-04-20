@@ -23,7 +23,7 @@ import (
 	"path"
 	"testing"
 
-	. "github.com/Comcast/rulio/core"
+	. "rulio/core"
 )
 
 // TestStorage verifies we can add Pairs and retrieve them using Load

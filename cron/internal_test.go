@@ -18,7 +18,7 @@ package cron
 
 import (
 	"fmt"
-	"github.com/Comcast/rulio/core"
+	"rulio/core"
 	"log"
 	"net/http"
 	"net/http/httptest"

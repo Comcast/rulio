@@ -26,7 +26,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/Comcast/rulio/core"
+	"rulio/core"
 )
 
 type CroltSimple struct {
