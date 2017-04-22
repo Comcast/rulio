@@ -313,3 +313,19 @@ func TestJavascriptHttpx(t *testing.T) {
 	}
 
 }
+
+func TestJavascriptProcessEventNil(t *testing.T) {
+	name := "test"
+	ctx := NewContext("TestJavascriptLocation")
+
+	loc, err := NewLocation(ctx, name, nil, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	ctx.SetLoc(loc)
+
+	bs := make(Bindings)
+	if _, err := RunJavascript(ctx, &bs, nil, `Env.ProcessEvent({})`); err != nil {
+		t.Error(err)
+	}
+}

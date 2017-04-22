@@ -216,7 +216,7 @@ func LocationFunctions(ctx *Context, loc *Location, runtime *otto.Otto, env map[
 		}
 
 		ews, err := loc.ProcessEvent(ctx, Map(m))
-		if err != nil {
+		if err != (*Condition)(nil) {
 			throwJavascript(call.Otto.Call("new Error", nil, err.Error()))
 		}
 
