@@ -44,6 +44,13 @@ type RulePolicies struct {
 	// components to be executed sequentially.  Otherwise a rule's
 	// actions will be executed concurrently.
 	SerialActions bool `json:"serialActions,omitempty"`
+
+	// Cutting will proceed to an action for only one condition
+	// evaluation (that results in bindings).
+	//
+	// An experimental feature to facilite state machine
+	// compilation to (self-modifying!) rules.
+	Cutting bool `json:"cutting,omitempty"`
 }
 
 // What a rule is.
@@ -100,6 +107,10 @@ type Rule struct {
 	// ToDo: Location?
 
 	// See Rule.UnmarshalJSON() below.
+
+	// cut marks that we've found our condition branch w.r.t. the
+	// Cutting rule policy.
+	cut bool
 
 	// But Zeus!  Whoever shouts “Zeus is victorious!” will gain
 	// wisdom replete. Zeus it was who gave men their knowledge

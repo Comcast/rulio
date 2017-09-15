@@ -268,11 +268,11 @@ func maybeCopyEvent(bs Bindings) {
 	// -- Marcus Aurelius
 }
 
-func (loc *Location) ExecAction(ctx *Context, bs Bindings, a Action) (interface{}, error) {
+func (loc *Location) ExecAction(ctx *Context, bs Bindings, a Action, ruleProps map[string]interface{}) (interface{}, error) {
 
 	Log(INFO, ctx, "core.ExecAction", "action", a)
 
-	f, err := loc.getActionFunc(ctx, bs, a)
+	f, err := loc.getActionFunc(ctx, bs, a, ruleProps)
 
 	if nil != err {
 		return nil, err
@@ -391,7 +391,7 @@ func (i *OttoActionInterpreter) GetThunk(ctx *Context, loc *Location, bs Binding
 	}, nil
 }
 
-func (loc *Location) getActionFunc(ctx *Context, bs Bindings, a Action) (func() (interface{}, error), error) {
+func (loc *Location) getActionFunc(ctx *Context, bs Bindings, a Action, ruleProps map[string]interface{}) (func() (interface{}, error), error) {
 	Log(DEBUG, ctx, "core.getActionFunc", "action", a)
 
 	if i, have := loc.Control().ActionInterpreters[a.Endpoint]; have {
@@ -447,6 +447,13 @@ func (loc *Location) getActionFunc(ctx *Context, bs Bindings, a Action) (func() 
 			} else {
 				Log(DEBUG, ctx, "core.getActionFunc.javascript",
 					"action", a, "CodeProps", nil)
+			}
+
+			if ruleProps != nil {
+				if props == nil {
+					props = make(map[string]interface{}, 1)
+				}
+				props["ruleProps"] = ruleProps
 			}
 
 			v, err := RunJavascript(ctx, bs.StripQuestionMarks(ctx), props, script)

@@ -321,6 +321,7 @@ func (s *IndexedState) add(ctx *Context, id string, x Map) (string, error) {
 
 // GetRulesPatterns extracts the rule's 'when' pattern.
 func GetRulePatterns(ctx *Context, rule map[string]interface{}) []map[string]interface{} {
+	// Never should have allowed this kind of thing.
 	eventPattern, have := rule["when"]
 	if !have {
 		return nil
@@ -332,7 +333,14 @@ func GetRulePatterns(ctx *Context, rule map[string]interface{}) []map[string]int
 	if fromQuery {
 		events = append(events, p.(map[string]interface{}))
 	} else {
-		events = append(events, when)
+		ps, fromQuery := when["patterns"]
+		if fromQuery {
+			for _, p := range ps.([]interface{}) {
+				events = append(events, p.(map[string]interface{}))
+			}
+		} else {
+			events = append(events, when)
+		}
 	}
 	Log(DEBUG, ctx, "core.GetRulePatterns", "events", events)
 	return events

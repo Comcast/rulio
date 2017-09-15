@@ -113,11 +113,40 @@ func (w *FindRules) Do(ctx *Context, loc *Location) {
 		// from a trigger).
 
 		if rule.When != nil {
-			eventPattern := rule.When.Pattern
-			bss, err = Matches(ctx, eventPattern, w.Event)
-			if err != nil {
-				w.Disposition = &Condition{err.Error(), "fatal"}
-				return
+			if eventPattern := rule.When.Pattern; eventPattern != nil {
+				bss, err = Matches(ctx, eventPattern, w.Event)
+				if err != nil {
+					w.Disposition = &Condition{err.Error(), "fatal"}
+					return
+				}
+			} else {
+				bss = make([]Bindings, 0, 16)
+				for i, eventPattern := range rule.When.Patterns {
+					someBss, err := Matches(ctx, eventPattern, w.Event)
+					if err != nil {
+						w.Disposition = &Condition{err.Error(), "fatal"}
+						return
+					}
+					for j, someBs := range someBss {
+						// Pattern number
+						if _, have := someBs["_pn"]; !have {
+							someBs["_pn"] = i
+						}
+						// Number of patterns
+						if _, have := someBs["_np"]; !have {
+							someBs["_np"] = len(rule.When.Patterns)
+						}
+						// Bindings number
+						if _, have := someBs["_bn"]; !have {
+							someBs["_bn"] = j
+						}
+						// Number of bindings
+						if _, have := someBs["_nb"]; !have {
+							someBs["_nb"] = len(someBss)
+						}
+						bss = append(bss, someBs)
+					}
+				}
 			}
 		} else {
 			// Scheduled rule (triggered)
@@ -193,6 +222,12 @@ type EvalRuleCondition struct {
 }
 
 func (w *EvalRuleCondition) Do(ctx *Context, loc *Location) {
+
+	if w.Parent.Rule.cut {
+		w.Disposition = Complete
+		return
+	}
+
 	Log(DEBUG, ctx, "EvalRuleCondition.Do", "location", loc.Name, "work", *w)
 
 	Metric(ctx, "RuleEvaluated", "location", loc.Name, "ruleId", w.Parent.Rule.Id)
@@ -245,6 +280,13 @@ func (w *EvalRuleCondition) Do(ctx *Context, loc *Location) {
 		Metric(ctx, "RuleTriggered", "location", loc.Name, "ruleId", w.Parent.Rule.Id)
 	}
 
+	if w.Parent.Rule.Policies != nil && w.Parent.Rule.Policies.Cutting {
+		if 0 < len(qr.Bss) {
+			qr.Bss = qr.Bss[0:1]
+			w.Parent.Rule.cut = true
+		}
+	}
+
 	for _, bs := range qr.Bss {
 		for _, action := range w.Parent.Rule.Actions {
 			child := &ExecRuleAction{
@@ -295,7 +337,7 @@ func (w *ExecRuleAction) Do(ctx *Context, loc *Location) {
 
 	Metric(ctx, "ActionExecuted", "location", loc.Name)
 
-	x, err := loc.ExecAction(ctx, w.Bindings, w.Act)
+	x, err := loc.ExecAction(ctx, w.Bindings, w.Act, w.Parent.Parent.Rule.Props)
 	if err != nil {
 		w.Disposition = &Condition{err.Error(), "unknown"}
 		return

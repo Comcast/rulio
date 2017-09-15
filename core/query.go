@@ -358,8 +358,9 @@ func (p EmptyQuery) Exec(ctx *Context, loc *Location, qc QueryContext, qr QueryR
 }
 
 type PatternQuery struct {
-	Pattern   map[string]interface{} `json:"pattern"`
-	Locations []string               `json:"locations,omitempty"`
+	Pattern   map[string]interface{}   `json:"pattern,omitempty"`
+	Patterns  []map[string]interface{} `json:"patterns,omitempty"`
+	Locations []string                 `json:"locations,omitempty"`
 }
 
 type FactService interface {
@@ -528,15 +529,25 @@ func (p PatternQuery) Exec(ctx *Context, loc *Location, qc QueryContext, qr Quer
 func PatternQueryFromMap(ctx *Context, m map[string]interface{}) (Query, bool, error) {
 	var q PatternQuery
 	pattern, ok := m["pattern"]
-	if !ok {
-		Log(DEBUG, ctx, "core.PatternQueryFromMap", "map", m, "msg", "no pattern")
-		return nil, false, NewSyntaxError("No pattern in map")
+	if ok {
+		arg, ok := pattern.(map[string]interface{})
+		if !ok {
+			return nil, false, fmt.Errorf("%#v isn't a map[string]interface{}", pattern)
+		}
+		q.Pattern = arg
+	} else {
+		patterns, ok := m["patterns"]
+		if !ok {
+			Log(DEBUG, ctx, "core.PatternQueryFromMap", "map", m, "msg", "no pattern")
+			return nil, false, NewSyntaxError("No pattern(s) in map")
+		}
+		ps, ok := patterns.([]map[string]interface{})
+		if !ok {
+			return nil, false, fmt.Errorf("%#v isn't a []interface{}", patterns)
+		}
+		q.Patterns = ps
 	}
-	arg, ok := pattern.(map[string]interface{})
-	if !ok {
-		return nil, false, fmt.Errorf("%#v isn't a map[string]interface{}", pattern)
-	}
-	q.Pattern = arg
+
 	locs, err := getLocationsFromMap(ctx, m)
 	if err != nil {
 		return nil, false, err

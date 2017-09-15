@@ -163,7 +163,7 @@ func TestActionInterpreters(t *testing.T) {
 	loc.Control().ActionInterpreters = map[string]ActionInterpreter{
 		"otto": oai,
 	}
-	f, err := loc.getActionFunc(ctx, bs, a)
+	f, err := loc.getActionFunc(ctx, bs, a, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
