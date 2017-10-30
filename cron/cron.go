@@ -29,13 +29,13 @@ package cron
 // 2. Our Rem() method does a linear scan over pending jobs (instead
 // of using a map).  Don't want too many jobs.
 //
-// 3. We can do efficient location-specific cron crontrol (pause,
+// 3. We can do efficient location-specific cron control (pause,
 // resume, size limit).
 //
 // 4. Maybe problem containment.  Perhaps a problematic Cron instance
 // won't always create problems for other cron instances.
 //
-// However, this implemention does provide some coarse yet efficient
+// However, this implementation does provide some coarse yet efficient
 // global control via CronBroadcasters.  The default
 // SysCronBroadcaster can be used to suspend and resume all cron
 // processing across all locations.

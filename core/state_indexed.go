@@ -392,7 +392,7 @@ func (s *IndexedState) Rem(ctx *Context, id string) (bool, error) {
 		if err != nil {
 			Log(ERROR, ctx, "IndexedState.Rem", "state", s.Name, "error", err,
 				"id", id, "when", "remHook")
-			// ToDo: Consider queueing, falling through, ...
+			// ToDo: Consider queuing, falling through, ...
 			return false, err
 		}
 	}
