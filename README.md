@@ -32,6 +32,8 @@ bindings, the rule's actions are executed.
 See the [docs](doc) for more.  In particular, see `doc/Manual.md`.
 There are lots of examples in `examples/`.
 
+Also see [`Comcast/sheens`](github.com/Comcast/sheens).
+
 ## License
 
 This software is released under the Apache License, Version 2.0.  See
