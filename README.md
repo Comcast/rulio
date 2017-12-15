@@ -32,7 +32,7 @@ bindings, the rule's actions are executed.
 See the [docs](doc) for more.  In particular, see `doc/Manual.md`.
 There are lots of examples in `examples/`.
 
-Also see [`Comcast/sheens`](github.com/Comcast/sheens).
+Also see [`Comcast/sheens`](https://github.com/Comcast/sheens).
 
 ## License
 

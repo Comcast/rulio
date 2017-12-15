@@ -33,6 +33,7 @@ type Location struct {
 	Config       *Config
 	control      *Control
 	state        State
+	pad1         int32 // See https://github.com/Comcast/rulio/issues/38
 	stats        ServiceStats
 	loading      bool
 	lastUpdated  string
@@ -167,7 +168,7 @@ func NewLocation(ctx *Context, name string, state State, ctrl *Control) (*Locati
 
 	// ToDo: CacheExpires default duration.
 	// loc := Location{sync.RWMutex{}, name, false, nil, ctrl, state, ServiceStats{}, false}
-	loc := Location{sync.RWMutex{}, name, false, nil, nil, state, ServiceStats{}, false, "", sync.RWMutex{}, nil}
+	loc := Location{sync.RWMutex{}, name, false, nil, nil, state, 0, ServiceStats{}, false, "", sync.RWMutex{}, nil}
 
 	return &loc, loc.init(ctx)
 }
