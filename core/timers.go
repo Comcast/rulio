@@ -116,7 +116,7 @@ func (t *Timer) Stop() int64 {
 // StopTag computes the elapsed time (in nanosecs) and stores it in
 // the history.
 //
-// This method also logs (level -1) the elasped time with the given
+// This method also logs (level -1) the elapsed time with the given
 // tag.
 func (t *Timer) StopTag(tag string) int64 {
 	if t == &NoTimer {

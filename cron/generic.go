@@ -27,7 +27,7 @@ import (
 // cron can issue as a cron job.
 //
 // We'll likely need to add to this struct (or another) to support
-// additional HTTP request propeties such as timeouts.
+// additional HTTP request properties such as timeouts.
 type Work struct {
 	// URL is the target for the request.
 	URL string `json:"url"`
@@ -113,7 +113,7 @@ type Cronner interface {
 	//
 	// A persistent Cronner will not get updates when Locations
 	// are loaded (since such a Cronner would have gotten updates
-	// when the API calls occured).
+	// when the API calls occurred).
 	Persistent() bool
 }
 

@@ -212,7 +212,7 @@ type HTTPResult struct {
 	// Body is the last body (if any) received.
 	Body string
 
-	// Attemts is the number of attempts made.
+	// Attempts is the number of attempts made.
 	Attempts int
 
 	// Error is the most recent error message.

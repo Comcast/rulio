@@ -223,7 +223,7 @@ var IncCounterBase = uint64(0)
 // CheckErr is a utility function to log an error if any.
 //
 // Useful in goroutines or in other places where there is no caller to
-// bother but something inconvenient might have occured.  Ideally, we
+// bother but something inconvenient might have occurred.  Ideally, we
 // never use this function.
 func CheckErr(ctx *Context, op string, err error) {
 	if err != nil {
