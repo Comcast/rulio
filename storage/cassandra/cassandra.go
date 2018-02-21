@@ -21,9 +21,10 @@ package cassandra
 
 import (
 	"fmt"
-	"github.com/gocql/gocql"
 	"strings"
 	"sync"
+
+	"github.com/gocql/gocql"
 
 	. "github.com/Comcast/rulio/core"
 )
@@ -40,6 +41,10 @@ type CassStorage struct {
 	session *gocql.Session
 }
 
+// NewStorage creates new Storage implementation based on Cassandra.
+//
+// The given nodes should have the form ADDRESS:PORT, where the PORT
+// is the CQL port (normally 9042, I think).
 func NewStorage(ctx *Context, nodes []string) (*CassStorage, error) {
 	cassStoreMutex.Lock()
 	defer cassStoreMutex.Unlock()
