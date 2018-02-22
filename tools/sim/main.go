@@ -18,11 +18,11 @@ import (
 
 var elapsedMinThreshold = flag.Duration("mintime",
 	10000*time.Nanosecond,
-	"log if elasped less than this time")
+	"log if elapsed less than this time")
 
 var elapsedMaxThreshold = flag.Duration("maxtime",
 	60*time.Second,
-	"log if elasped greater than this time")
+	"log if elapsed greater than this time")
 
 var statsInterval = flag.Duration("stats",
 	1*time.Second,

@@ -296,14 +296,14 @@ The schedule syntax can have three forms:
 
 2. "!TIME", where TIME is according to [RFC3339](https://www.ietf.org/rfc/rfc3339.txt).
 
-3. "+DURATION", where DURATION is a [Go Duration](http://golang.org/pkg/time/#ParseDuration).  
+3. "+DURATION", where DURATION is a [Go Duration](http://golang.org/pkg/time/#ParseDuration).
 Examples: "5s" means "5 seconds", "2m" means "2 minutes", and "1h" means "1 hour".
 
 As an example, the following rule will be evaluated in 30 minutes.
 
 ```Javascript
 {"schedule":"+30m",
- "condition":{"and": [{"person":"homer", "likes":"tacos"}, 
+ "condition":{"and": [{"person":"homer", "likes":"tacos"},
                       {"person":"homer", "drinking":"beer"}]},
  "action":"message('Homer, you should have a beer with your tacos.')"}
 ```
@@ -444,7 +444,7 @@ Some of the properties of `Env`:
    is the content posted to the URL.  Note that the result is not
    parsed.  If the result is JSON, call `JSON.parse()` on it.  It
    supports cookies within the same rule.
-   
+
 9. `httpx(request)`: A better (?) function to get data via HTTP.  The
    argument is a specification for the request.  Properties: `method`
    (probably either `"GET"` or `"POST"`, `uri`, `headers` (currently
@@ -453,10 +453,10 @@ Some of the properties of `Env`:
    object with `timeout`, `insecureSkeipVerify`, and
    `responseHeaderTimeout` properties).  All are optional except for
    `uri`.
-   
+
     The response is an object with a `status` (an int) and a `body` (a
     string).
-   
+
 10. `match(pattern,fact)`: Call pattern [matching](#matching).  Both
    arguments are Javascript objects (not strings).  Returns an array
    of bindings (maps from variables, each prefixed by `?`, to values).
@@ -477,8 +477,8 @@ Some of the properties of `Env`:
     * `dir`: optional the current directory of the process
     * `cgroup`: optional the name of the process's cgroup (not currently used)
 
-    The result is an object that has the following properties: 
- 
+    The result is an object that has the following properties:
+
     * `Stdout`:  a string containing what the process wrote to `stdout`
     * `Stderr`:  a string containing what the process wrote to `stderr`
     * `Error`: a string containing an error message
@@ -488,7 +488,7 @@ Some of the properties of `Env`:
 11. `bash(commandLine, opts)`: Run Bash code.  Gives `commandLine` to
     `bash -c`.  The optional `opts` has the same structure as `cmd` in
     `exec(cmd)` documented above.
-   
+
 11. `Location`: The name of the location that contains the current rule.
 
 12. `Versions`: An array Javascript environment version strings.  Use
@@ -653,7 +653,7 @@ ToDo: Change terminology to reflect current representation.
 
 Event processing follows this procedure.  Given an event:
 
-1. Find relevant rules. 
+1. Find relevant rules.
 2. For each rule: Evaluate rule conditions to get sets of bindings.
 3. For each set of bindings and for each rule action, execute the action with bindings.
 
@@ -716,7 +716,7 @@ However, if a node was previously marked as completed, then neither
 API will attempt to re-execute that work.  `ExecEventWorkWalk` will,
 however, continue to that work's continuations.
 
-Incidently, the main API `ProcessEvent`'s implement just calls a
+Incidentally, the main API `ProcessEvent`'s implement just calls a
 `PrepareEvent` API followed by the `ExecEventWorkWalk` API.
 `PrepareEvent` is also exposed.  It just creates the root-level work,
 which will, when executed, generate continuations for all remaining
@@ -926,7 +926,7 @@ rules and facts.  These structures can be backed by a
 ### Indexed state
 
 This implementation (see `core/state_indexed.go`) offers somewhat
-fancy rule and fact indexing.  
+fancy rule and fact indexing.
 
 If you have a lot of rules and facts that are searched repeatedly for
 a single request (or if you are caching this state (see below)), then
@@ -936,7 +936,7 @@ it's probably worth your while to use indexed state.
 
 This implementation (see `core/state_linear.go`) doesn't index rules
 and facts.  A search is a simple linear scan that attempts matching
-against every rule/fact.  
+against every rule/fact.
 
 Obviously this approach buys lower memory consumption and initial CPU
 work (which would otherwise be spent building the initial indexes)
@@ -1185,7 +1185,7 @@ Result:
 
 ```Javacript
 {
-    "result": ..., 
+    "result": ...,
     "values": [
         "eat chips"
     ]
@@ -1215,30 +1215,30 @@ Input:
 ```Javascript
 {"requests":
  [{"uri":"/version"},
- 
+
   {"uri":"/loc/admin/clear",
    "location":"there"},
-   
+
   {"uri":"/loc/facts/add",
    "location":"there",
    "fact":{"likes":"tacos"},
    "id":"likesTacos"},
-   
+
   {"uri":"/loc/facts/get",
    "location":"there",
    "id":"likesTacos"},
-   
+
   {"bad":"request"},
-  
+
   {"uri":"/sys/storage/get"},
-  
+
   {"uri":"/sys/storage/set",
    "state":{"there":{"likesTacos":"{\"likes\":\"chips\"}"}}},
-   
+
   {"uri":"/loc/facts/get",
    "location":"there",
    "id":"likesTacos"},
-   
+
   {"uri":"/sys/storage/get"}
 ]}
 ```
@@ -1298,4 +1298,3 @@ Results:
     }
 ]
 ```
-

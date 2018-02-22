@@ -232,7 +232,7 @@ func (ps *Parameters) Log(ctx *Context) {
 		return
 	}
 	args := make([]interface{}, 0, 1+len(m)*2)
-	args = append(args, "Paramters")
+	args = append(args, "Parameters")
 	for p, v := range m {
 		args = append(args, p, v)
 	}
