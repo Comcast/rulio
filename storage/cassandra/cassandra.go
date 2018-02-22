@@ -82,9 +82,9 @@ func (s *CassStorage) init(ctx *Context, nodes interface{}) error {
 		CassandraStateDDL = `
 		CREATE TABLE locstate (
 			loc text,
-			pairs map<text, text>,
+			data map<text, text>,
 			last_modified timestamp,
-			PRIMARY KEY (tag)
+			PRIMARY KEY (loc)
 		)
 		`
 	)
@@ -124,7 +124,7 @@ func (s *CassStorage) init(ctx *Context, nodes interface{}) error {
 func (s *CassStorage) Load(ctx *Context, loc string) ([]Pair, error) {
 	Log(INFO, ctx, "CassStorage.Load", "location", loc)
 
-	iter := s.session.Query(`SELECT pairs FROM locstate WHERE loc = ?`, loc).Iter()
+	iter := s.session.Query(`SELECT data FROM locstate WHERE loc = ?`, loc).Iter()
 	acc := make([]Pair, 0, 1024)
 
 	var pairs map[string]string
