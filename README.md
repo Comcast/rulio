@@ -270,5 +270,4 @@ Persistence is mostly pluggable.  See `storage/` for examples.
 
 ## Conclusion
 
-Take a look at the `doc/Manual.md` for more infomation.
-
+Take a look at the `doc/Manual.md` for more information.
