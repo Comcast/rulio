@@ -41,17 +41,66 @@ type CassStorage struct {
 	session *gocql.Session
 }
 
+// CassandraDBConfig does what'd you'd think.
+//
+// This name stutters because it's convenient to dot-import core,
+// which defines 'Storage'.
+type CassandraDBConfig struct {
+	nodes []string
+	username string
+	password string
+}
+
+// ParseConfig generates a CassandraDBConfig from a string.
+//
+// Input should look like region[:tableName[:(true|false)]], where the
+// boolean indicates whether to do consistent reads.  Defaults: the
+// vars DefaultRegion, DefaultTableName, DefaultConsistent.
+func ParseConfig(config string) (*CassandraDBConfig, error) {
+	var ns []string
+	user := ""
+	pass := ""
+
+	parts := strings.SplitN(config, ";", 3)
+
+	if 0 < len(parts) && parts[0] != "" {
+		hostPorts := strings.Split(parts[0], ",")
+		ns = make([]string, 0, len(hostPorts))
+		for _, hp := range hostPorts {
+			ns = append(ns, hp)
+		}
+
+	}
+
+	if 1 < len(parts) && parts[1] != "" {
+		user = parts[1]
+	}
+
+	if 2 < len(parts) && parts[2] != "" {
+		pass = parts[2]
+	}
+
+	c := CassandraDBConfig{
+		nodes: ns,
+		username: user,
+		password: pass,
+	}
+
+	return &c, nil
+}
+
+
 // NewStorage creates new Storage implementation based on Cassandra.
 //
 // The given nodes should have the form ADDRESS:PORT, where the PORT
 // is the CQL port (normally 9042, I think).
-func NewStorage(ctx *Context, nodes []string) (*CassStorage, error) {
+func NewStorage(ctx *Context, config CassandraDBConfig) (*CassStorage, error) {
 	cassStoreMutex.Lock()
 	defer cassStoreMutex.Unlock()
 
 	if nil == cassStore {
 		s := CassStorage{}
-		err := s.init(ctx, nodes)
+		err := s.init(ctx, config)
 		if nil != err {
 			return nil, err
 		}
@@ -61,13 +110,19 @@ func NewStorage(ctx *Context, nodes []string) (*CassStorage, error) {
 	return cassStore, nil
 }
 
-func (s *CassStorage) init(ctx *Context, nodes interface{}) error {
-	Log(INFO, ctx, "CassStorage.init", "nodes", nodes)
+
+func (s *CassStorage) init(ctx *Context, config CassandraDBConfig) error {
+	Log(INFO, ctx, "CassStorage.init", "config", config)
 
 	// ToDo: Expose more/better Cass connection parameters
-	s.cluster = gocql.NewCluster(nodes.([]string)...)
+	s.cluster = gocql.NewCluster(config.nodes...)
 	s.cluster.Consistency = gocql.Quorum
-
+	if config.username != "" {
+		s.cluster.Authenticator = gocql.PasswordAuthenticator {
+			Username: config.username,
+			Password: config.password,
+		}
+	}
 	// How to create Cassandra data structures.
 
 	// ToDo: Probably move so that things like replication can be

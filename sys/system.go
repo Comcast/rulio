@@ -407,6 +407,8 @@ func GetStorage(ctx *Context, storageType string, storageConfig interface{}) (St
 	case "cassandra":
 		nodes := storageConfig
 		var ns []string
+		var configStr string
+
 		switch vv := nodes.(type) {
 		case []interface{}:
 			ns = make([]string, 0, len(vv))
@@ -414,22 +416,20 @@ func GetStorage(ctx *Context, storageType string, storageConfig interface{}) (St
 				ns = append(ns, n.(string))
 			}
 			Log(INFO, ctx, "core.GetStorage", "nodes", ns)
+			configStr = strings.Join(ns, ",")
 		case string:
-			hostPorts := strings.Split(vv, ",")
-			ns = make([]string, 0, len(hostPorts))
-			for _, hp := range hostPorts {
-				ns = append(ns, hp)
-			}
+			configStr = nodes.(string)
 		case []string:
-			ns = make([]string, 0, len(vv))
-			for _, hp := range vv {
-				ns = append(ns, hp)
-			}
-
+			configStr = strings.Join(nodes.([]string), ",")
 		default:
 			return nil, fmt.Errorf("bad type for nodes %v (%T); should be []interface{}.", nodes, nodes)
 		}
-		return cassandra.NewStorage(ctx, ns)
+		config, err := cassandra.ParseConfig(configStr)
+		if err != nil {
+			return nil, err
+		}
+
+		return cassandra.NewStorage(ctx, *config)
 
 	case "bolt":
 		filename := storageConfig
