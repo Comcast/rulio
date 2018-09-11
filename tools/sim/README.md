@@ -43,8 +43,8 @@ worst latency every few seconds.
 ## Usage
 
 ```Shell
-$ gen -h
-Usage of ./gen:
+$ ./sim -h
+Usage of ./sim:
   -accounts=10: Number of accounts to simulate
   -config="": Optional filename for configuration params
   -duration=60: Run for this many seconds
@@ -75,7 +75,7 @@ it receives.
 Then start the generator with
 
 ```Shell
-go build && ./gen -config=config1.js -duration=120 2>&1 | tee gen.log | \
+go build && ./sim -config=config1.js -duration=120 2>&1 | tee gen.log | \
   grep -F latencies
 ```
 
