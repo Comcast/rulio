@@ -1175,7 +1175,7 @@ mechanism to implement scheduled rules.)
 ```Shell
 cat <<EOF | curl -s -d "@-" "$ENDPOINT/api/loc/events/ingest" | python -mjson.tool
 {"location":"$ACCOUNT",
-  "event": {"execute": {"when":{"pattern":{"wants":"?x"}},
+  "event": {"evaluate!": {"when":{"pattern":{"wants":"?x"}},
                         "action":{"code":"'eat ' + x;"}},
             "wants":"chips"}}
 EOF
