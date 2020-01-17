@@ -46,22 +46,22 @@ type CassStorage struct {
 // This name stutters because it's convenient to dot-import core,
 // which defines 'Storage'.
 type CassandraDBConfig struct {
-	nodes []string
+	nodes    []string
 	username string
 	password string
+	keyspace string
 }
 
 // ParseConfig generates a CassandraDBConfig from a string.
-//
-// Input should look like region[:tableName[:(true|false)]], where the
-// boolean indicates whether to do consistent reads.  Defaults: the
-// vars DefaultRegion, DefaultTableName, DefaultConsistent.
+// Configuration is parsed from a string of the follow format:
+// host:port,host:port;username;password;keyspace
 func ParseConfig(config string) (*CassandraDBConfig, error) {
 	var ns []string
 	user := ""
 	pass := ""
+	ks := ""
 
-	parts := strings.SplitN(config, ";", 3)
+	parts := strings.SplitN(config, ";", 4)
 
 	if 0 < len(parts) && parts[0] != "" {
 		hostPorts := strings.Split(parts[0], ",")
@@ -80,15 +80,19 @@ func ParseConfig(config string) (*CassandraDBConfig, error) {
 		pass = parts[2]
 	}
 
+	if 3 < len(parts) && parts[3] != "" {
+		ks = parts[3]
+	}
+
 	c := CassandraDBConfig{
-		nodes: ns,
+		nodes:    ns,
 		username: user,
 		password: pass,
+		keyspace: ks,
 	}
 
 	return &c, nil
 }
-
 
 // NewStorage creates new Storage implementation based on Cassandra.
 //
@@ -110,7 +114,6 @@ func NewStorage(ctx *Context, config CassandraDBConfig) (*CassStorage, error) {
 	return cassStore, nil
 }
 
-
 func (s *CassStorage) init(ctx *Context, config CassandraDBConfig) error {
 	Log(INFO, ctx, "CassStorage.init", "config", config)
 
@@ -118,7 +121,7 @@ func (s *CassStorage) init(ctx *Context, config CassandraDBConfig) error {
 	s.cluster = gocql.NewCluster(config.nodes...)
 	s.cluster.Consistency = gocql.Quorum
 	if config.username != "" {
-		s.cluster.Authenticator = gocql.PasswordAuthenticator {
+		s.cluster.Authenticator = gocql.PasswordAuthenticator{
 			Username: config.username,
 			Password: config.password,
 		}
@@ -144,6 +147,9 @@ func (s *CassStorage) init(ctx *Context, config CassandraDBConfig) error {
 		`
 	)
 
+	if config.keyspace != "" {
+		CassandraKeyspace = config.keyspace
+	}
 	//create keyspace if not exists
 	session, err := s.cluster.CreateSession()
 	if nil != err {
