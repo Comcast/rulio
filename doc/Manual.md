@@ -269,7 +269,7 @@ When represented in JSON, a rule looks something like:
 ```
 
 By default, a rule action's `code` is Javascript.  But
-[actions](#actions) can have several forms.  See [actions](#below).
+[actions](#actions) can have several forms.  See [actions](#actions).
 
 Rules are stored persistently by [location](#locations).  In fact,
 rules are just special facts, but rules are indexed in a manner that
