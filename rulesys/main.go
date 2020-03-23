@@ -165,7 +165,7 @@ func engine(args []string, wg *sync.WaitGroup) []string {
 		}
 	}
 
-	verb, err := core.ParseVerbosity(*verbosity)
+	verb, err := core.ParseVerbosity(*accVerbosity)
 	if err != nil {
 		panic(err)
 	}
