@@ -17,6 +17,7 @@
 package core
 
 import (
+	"crypto/rand"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -236,38 +237,16 @@ func Inc(p *uint64, d int64) {
 	atomic.AddUint64(p, uint64(d))
 }
 
-// The Moscow Rules
-//
-// 1. Assume nothing.
-// 2. Never go against your gut.
-// 3. Everyone is potentially under opposition control.
-// 4. Don't look back; you are never completely alone.
-// 5. Go with the flow, blend in.
-// 6. Vary your pattern and stay within your cover.
-// 7. Lull them into a sense of complacency.
-// 8. Don't harass the opposition.
-// 9. Pick the time and place for action.
-// 10. Keep your options open.
-//
-//   --International Spy Museum (via https://en.wikipedia.org/wiki/The_Moscow_rules)
-
-// UUID probably returns a version 4 UUID.
-//
-// See https://groups.google.com/forum/#!topic/golang-nuts/Rn13T6BZpgE
-var Random *os.File
-
-func init() {
-	f, err := os.Open("/dev/urandom")
-	if err != nil {
-		log.Fatal(err)
-	}
-	Random = f
-}
-
-// UUID generates one using data from '/dev/urandom'.
+// UUID generates what is likely a v4 UUID using data from `crypto/Reader`.
+// If crypto/Reader fails, returns the empty string instead.
+// The implementation is platform-dependent; see
+//     https://golang.org/pkg/crypto/rand/ 								(random byte generation)
+//     https://groups.google.com/forum/#!topic/golang-nuts/Rn13T6BZpgE	(uuid generation)
 func UUID() string {
-	b := make([]byte, 16)
-	Random.Read(b)
+	var b [16]byte
+	if _, err := rand.Reader.Read(b[:]); err != nil {
+		return ""
+	}
 	b[6] = (b[6] & 0x0f) | 0x40
 	b[8] = (b[8] & 0x3f) | 0x80
 	return fmt.Sprintf("%x-%x-%x-%x-%x", b[0:4], b[4:6], b[6:8], b[8:10], b[10:])
