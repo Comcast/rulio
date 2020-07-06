@@ -906,14 +906,6 @@ func RunJavascript(ctx *Context, bs *Bindings, props map[string]interface{}, src
 	if SystemParameters.JavascriptTimeouts && 0 <= int64(timeout) {
 		start := time.Now()
 		Log(DEBUG, ctx, "core.RunJavascript", "timeout", timeout, "start", start)
-		go func() {
-			time.Sleep(timeout)
-			Log(WARN, ctx, "core.RunJavascript", "timeout", timeout, "timeout", time.Now())
-			runtime.Interrupt <- func() {
-				panic(Halt)
-			}
-		}()
-
 		defer func() {
 			duration := time.Since(start)
 			if caught := recover(); caught != nil {
@@ -927,6 +919,12 @@ func RunJavascript(ctx *Context, bs *Bindings, props map[string]interface{}, src
 		}()
 
 		runtime.Interrupt = make(chan func(), 1) // No blocking
+		go func() {
+			time.Sleep(timeout)
+			runtime.Interrupt <- func() {
+				panic(Halt)
+			}
+		}()
 	}
 
 	v, err := runtime.Run(src)
