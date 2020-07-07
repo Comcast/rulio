@@ -18,7 +18,12 @@ package core
 
 import (
 	"encoding/json"
+	"fmt"
+	"net/http"
+	"net/http/httptest"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 type SearchTest struct {
@@ -55,10 +60,15 @@ func sameBindingss(x []Bindings, y []Bindings) bool {
 	if len(x) != len(y) {
 		return false
 	}
+
+	yc := make([]Bindings, len(y))
+	copy(yc, y)
+	y = yc
 XS:
 	for _, bs := range x {
-		for _, bs1 := range y {
+		for i, bs1 := range y {
 			if bs.sameAs(bs1) {
+				y = append(y[:i], y[i+1:]...)
 				continue XS
 			}
 		}
@@ -137,7 +147,7 @@ func ParseQueryFromJSON(ctx *Context, s string) (Query, error) {
 	return ParseQuery(ctx, x)
 }
 
-func doQueryTest(t *testing.T, facts []string, query string, bss string) {
+func doQueryTest(t *testing.T, facts []string, query string, bss string) error {
 	ctx := NewContext("TestSystem")
 	loc, err := NewLocation(ctx, "test", nil, nil)
 	if err != nil {
@@ -163,7 +173,7 @@ func doQueryTest(t *testing.T, facts []string, query string, bss string) {
 	qr, err := q.Exec(ctx, loc, qc, InitialQueryResult(ctx))
 
 	if nil != err {
-		t.Error(err)
+		return err
 	}
 
 	var expected []Bindings
@@ -176,41 +186,79 @@ func doQueryTest(t *testing.T, facts []string, query string, bss string) {
 		t.Logf("Got %s\n", js)
 		t.Fail()
 	}
+
+	return nil
 }
 
 func TestQuerySimple(t *testing.T) {
-	doQueryTest(t,
+	err := doQueryTest(t,
 		[]string{`{"likes":"chips"}`, `{"likes":"tacos"}`, `{"drinks":"beer"}`},
 		`{"pattern": {"likes":"?likes"}}`,
-		`[{"?likes":"tacos"},{"?likes":"tacos"}]`)
+		`[{"?likes":"tacos"},{"?likes":"chips"}]`)
+	assert.NoError(t, err)
+}
+
+func TestQueryExternal(t *testing.T) {
+	t.Run("Success", func(t *testing.T) {
+		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.Write([]byte(`{"found":[{"bindingss":[{"?likes":"tacos"},{"?likes":"chips"}]}]}`))
+			return
+		}))
+		defer server.Close()
+		err := doQueryTest(t,
+			nil,
+			fmt.Sprintf(`{"pattern": {"likes":"?likes"}, "location": %q}`, server.URL),
+			`[{"?likes":"tacos"},{"?likes":"chips"}]`)
+		assert.NoError(t, err)
+	})
+
+	t.Run("ExternalError", func(t *testing.T) {
+		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}))
+		defer server.Close()
+		err := doQueryTest(t,
+			nil,
+			fmt.Sprintf(`{"pattern": {"likes":"?likes"}, "location": %q}`, server.URL),
+			`[{"?likes":"tacos"},{"?likes":"chips"}]`)
+		assert.Error(t, err)
+		if err != nil {
+			assert.Contains(t, err.Error(), "unexpected status code")
+		}
+	})
 }
 
 func TestQueryOr(t *testing.T) {
-	doQueryTest(t,
+	err := doQueryTest(t,
 		[]string{`{"likes":"chips"}`, `{"likes":"tacos"}`, `{"drinks":"beer"}`},
 		`{"or":[{"pattern": {"likes":"?likes"}},{"pattern": {"drinks":"?drinks"}}]}`,
-		`[{"?likes":"tacos"},{"?likes":"tacos"},{"?drinks":"beer"}]`)
+		`[{"?likes":"tacos"},{"?likes":"chips"},{"?drinks":"beer"}]`)
+	assert.NoError(t, err)
 }
 
 func TestQueryAnd(t *testing.T) {
-	doQueryTest(t,
+	err := doQueryTest(t,
 		[]string{`{"likes":"rum"}`, `{"likes":"tacos"}`, `{"drinks":"rum"}`},
 		`{"and":[{"pattern": {"likes":"?likes"}},{"pattern": {"drinks":"?likes"}}]}`,
 		`[{"?likes":"rum"}]`)
+	assert.NoError(t, err)
 }
 
 func TestQueryNot(t *testing.T) {
-	doQueryTest(t,
+	err := doQueryTest(t,
 		[]string{`{"likes":"rum"}`, `{"likes":"tacos"}`, `{"drinks":"rum"}`},
 		`{"and":[{"pattern": {"likes":"?likes"}},{"not":{"pattern": {"drinks":"?likes"}}}]}`,
 		`[{"?likes":"tacos"}]`)
+	assert.NoError(t, err)
 }
 
 func TestQueryCode(t *testing.T) {
-	doQueryTest(t,
+	err := doQueryTest(t,
 		[]string{`{"likes":"rum"}`, `{"likes":"tacos"}`, `{"drinks":"rum"}`},
 		`{"and":[{"pattern": {"likes":"?likes"}},{"code":"likes.length < 4"}]}`,
 		`[{"?likes":"rum"}]`)
+	assert.NoError(t, err)
 }
 
 func doQueryBenchmark(b *testing.B, facts []string, query string, bss string) {
