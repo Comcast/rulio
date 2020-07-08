@@ -390,6 +390,14 @@ func Post(ctx *Context, uri string, contentType string, body string) (string, er
 	req.ContentType = contentType
 
 	res, err := req.Do(ctx)
+	if err != nil {
+		return "", fmt.Errorf("error making POST request: %v", err)
+	}
 	got := res.Body
-	return got, err
+
+	switch res.Status {
+	case http.StatusOK:
+		return got, nil
+	}
+	return "", fmt.Errorf("unexpected status code %v", res.Status)
 }
