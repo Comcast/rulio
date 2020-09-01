@@ -48,14 +48,14 @@ type CassStorage struct {
 // This name stutters because it's convenient to dot-import core,
 // which defines 'Storage'.
 type CassandraDBConfig struct {
-	nodes          []string
+	Nodes          []string
 	username       string
 	password       string
 	keyspace       string
-	timeout        time.Duration
-	backoffRetries int
-	backoffMin     time.Duration
-	backoffMax     time.Duration
+	Timeout        time.Duration
+	BackoffRetries int
+	BackoffMin     time.Duration
+	BackoffMax     time.Duration
 }
 
 // ParseConfig generates a CassandraDBConfig from a string.
@@ -124,14 +124,14 @@ func ParseConfig(config string) (*CassandraDBConfig, error) {
 	}
 
 	c := CassandraDBConfig{
-		nodes:          ns,
+		Nodes:          ns,
 		username:       user,
 		password:       pass,
 		keyspace:       ks,
-		timeout:        timeout,
-		backoffRetries: backoffRetries,
-		backoffMin:     backoffMin,
-		backoffMax:     backoffMax,
+		Timeout:        timeout,
+		BackoffRetries: backoffRetries,
+		BackoffMin:     backoffMin,
+		BackoffMax:     backoffMax,
 	}
 
 	return &c, nil
@@ -139,7 +139,7 @@ func ParseConfig(config string) (*CassandraDBConfig, error) {
 
 // NewStorage creates new Storage implementation based on Cassandra.
 //
-// The given nodes should have the form ADDRESS:PORT, where the PORT
+// The given Nodes should have the form ADDRESS:PORT, where the PORT
 // is the CQL port (normally 9042, I think).
 func NewStorage(ctx *Context, config CassandraDBConfig) (*CassStorage, error) {
 	cassStoreMutex.Lock()
@@ -161,7 +161,7 @@ func (s *CassStorage) init(ctx *Context, config CassandraDBConfig) error {
 	Log(INFO, ctx, "CassStorage.init", "config", config)
 
 	// ToDo: Expose more/better Cass connection parameters
-	s.cluster = gocql.NewCluster(config.nodes...)
+	s.cluster = gocql.NewCluster(config.Nodes...)
 	s.cluster.Consistency = gocql.Quorum
 	if config.username != "" {
 		s.cluster.Authenticator = gocql.PasswordAuthenticator{
@@ -169,11 +169,11 @@ func (s *CassStorage) init(ctx *Context, config CassandraDBConfig) error {
 			Password: config.password,
 		}
 	}
-	s.cluster.Timeout = config.timeout
+	s.cluster.Timeout = config.Timeout
 	s.cluster.RetryPolicy = &gocql.ExponentialBackoffRetryPolicy{
-		config.backoffRetries,
-		config.backoffMin,
-		config.backoffMax,
+		config.BackoffRetries,
+		config.BackoffMin,
+		config.BackoffMax,
 	}
 	// How to create Cassandra data structures.
 
