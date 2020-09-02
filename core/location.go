@@ -178,12 +178,13 @@ func (loc *Location) init(ctx *Context) error {
 
 	ctx.SetLoc(loc)
 	loc.loading = true
-	if err := loc.state.Load(ctx); err != nil {
+	err := loc.state.Load(ctx)
+	loc.loading = false
+	if err != nil {
 		Log(ERROR, ctx, "Location.init", "error", err, "when", "State.Load", "location", loc.Name)
 	}
-	loc.loading = false
 
-	return nil
+	return err
 }
 
 func (loc *Location) StateSize(ctx *Context) (int, error) {
