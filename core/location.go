@@ -180,10 +180,10 @@ func (loc *Location) init(ctx *Context) error {
 	loc.loading = true
 	err := loc.state.Load(ctx)
 	loc.loading = false
+
 	if err != nil {
 		Log(ERROR, ctx, "Location.init", "error", err, "when", "State.Load", "location", loc.Name)
 	}
-
 	return err
 }
 
