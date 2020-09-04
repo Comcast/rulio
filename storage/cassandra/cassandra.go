@@ -21,8 +21,10 @@ package cassandra
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/gocql/gocql"
 
@@ -46,22 +48,31 @@ type CassStorage struct {
 // This name stutters because it's convenient to dot-import core,
 // which defines 'Storage'.
 type CassandraDBConfig struct {
-	nodes    []string
-	username string
-	password string
-	keyspace string
+	Nodes          []string
+	username       string
+	password       string
+	keyspace       string
+	Timeout        time.Duration
+	BackoffRetries int
+	BackoffMin     time.Duration
+	BackoffMax     time.Duration
 }
 
 // ParseConfig generates a CassandraDBConfig from a string.
 // Configuration is parsed from a string of the follow format:
 // host:port,host:port;username;password;keyspace
 func ParseConfig(config string) (*CassandraDBConfig, error) {
+	var err error
 	var ns []string
 	user := ""
 	pass := ""
 	ks := ""
+	timeout := time.Second
+	backoffRetries := 4
+	backoffMin := 100 * time.Millisecond
+	backoffMax := 10 * time.Second
 
-	parts := strings.SplitN(config, ";", 4)
+	parts := strings.Split(config, ";")
 
 	if 0 < len(parts) && parts[0] != "" {
 		hostPorts := strings.Split(parts[0], ",")
@@ -84,11 +95,43 @@ func ParseConfig(config string) (*CassandraDBConfig, error) {
 		ks = parts[3]
 	}
 
+	if 4 < len(parts) && parts[4] != "" {
+		timeout, err = time.ParseDuration(parts[4])
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	if 5 < len(parts) && parts[5] != "" {
+		backoffRetries, err = strconv.Atoi(parts[5])
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	if 6 < len(parts) && parts[6] != "" {
+		backoffMin, err = time.ParseDuration(parts[6])
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	if 7 < len(parts) && parts[7] != "" {
+		backoffMax, err = time.ParseDuration(parts[7])
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	c := CassandraDBConfig{
-		nodes:    ns,
-		username: user,
-		password: pass,
-		keyspace: ks,
+		Nodes:          ns,
+		username:       user,
+		password:       pass,
+		keyspace:       ks,
+		Timeout:        timeout,
+		BackoffRetries: backoffRetries,
+		BackoffMin:     backoffMin,
+		BackoffMax:     backoffMax,
 	}
 
 	return &c, nil
@@ -96,7 +139,7 @@ func ParseConfig(config string) (*CassandraDBConfig, error) {
 
 // NewStorage creates new Storage implementation based on Cassandra.
 //
-// The given nodes should have the form ADDRESS:PORT, where the PORT
+// The given Nodes should have the form ADDRESS:PORT, where the PORT
 // is the CQL port (normally 9042, I think).
 func NewStorage(ctx *Context, config CassandraDBConfig) (*CassStorage, error) {
 	cassStoreMutex.Lock()
@@ -118,13 +161,19 @@ func (s *CassStorage) init(ctx *Context, config CassandraDBConfig) error {
 	Log(INFO, ctx, "CassStorage.init", "config", config)
 
 	// ToDo: Expose more/better Cass connection parameters
-	s.cluster = gocql.NewCluster(config.nodes...)
+	s.cluster = gocql.NewCluster(config.Nodes...)
 	s.cluster.Consistency = gocql.Quorum
 	if config.username != "" {
 		s.cluster.Authenticator = gocql.PasswordAuthenticator{
 			Username: config.username,
 			Password: config.password,
 		}
+	}
+	s.cluster.Timeout = config.Timeout
+	s.cluster.RetryPolicy = &gocql.ExponentialBackoffRetryPolicy{
+		config.BackoffRetries,
+		config.BackoffMin,
+		config.BackoffMax,
 	}
 	// How to create Cassandra data structures.
 
@@ -185,16 +234,20 @@ func (s *CassStorage) init(ctx *Context, config CassandraDBConfig) error {
 func (s *CassStorage) Load(ctx *Context, loc string) ([]Pair, error) {
 	Log(INFO, ctx, "CassStorage.Load", "location", loc)
 
-	iter := s.session.Query(`SELECT data FROM locstate WHERE loc = ?`, loc).Iter()
+	q := s.session.Query(`SELECT data FROM locstate WHERE loc = ?`, loc)
 	acc := make([]Pair, 0, 1024)
 
 	var pairs map[string]string
 
-	if iter.Scan(&pairs) {
+	if err := q.Scan(&pairs); err == nil {
 		for k, v := range pairs {
 			d := Pair{[]byte(k), []byte(v)}
 			Log(DEBUG, ctx, "CassStorage.Load", "pair", d)
 			acc = append(acc, d)
+		}
+	} else {
+		if err != gocql.ErrNotFound {
+			return nil, fmt.Errorf("failed to scan cassandra DB: %w", err)
 		}
 	}
 
