@@ -74,7 +74,7 @@ type piPair struct {
 func mapToPairs(ctx *Context, m map[string]interface{}) []piPair {
 	keys := make([]string, len(m))
 	i := 0
-	for k, _ := range m {
+	for k := range m {
 		keys[i] = k
 		i++
 	}
@@ -180,9 +180,6 @@ func IsSortable(xs []interface{}) bool {
 		return true
 	}
 	kind := typeCode(xs[0])
-	if kind == 0 {
-		return false
-	}
 	for _, v := range xs[1:] {
 		if kind != typeCode(v) {
 			return false
@@ -214,8 +211,7 @@ func (a ThingSlice) Less(i, j int) bool {
 		// Unlikely to get here because all Javascript numbers are floats!
 		return a[i].(int) < a[j].(int)
 	default:
-		Log(ERROR, nil, "ThingSlice.Less", "error", "unsupported type", "things", a)
-		return false
+		return fmt.Sprintf("%v", a[i]) < fmt.Sprintf("%v", a[j])
 	}
 }
 
