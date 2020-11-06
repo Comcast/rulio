@@ -335,6 +335,18 @@ Example query:
 query.  An `and` or `or` value should be an array of subqueries.  A
 `not` value is a single subquery.
 
+The `or` query supports an optional `shortCircuit` flag. By default
+`or` queries are exhaustive: all subqueries will be executed.  When
+`shortCircuit` is set, the query terminates after the first subquery 
+returns bindings. For example, the below query would terminate if 
+the `?likes` pattern produces bindings.
+
+```Javascript
+{"or": [{"pattern":{"likes":"?likes"}},
+        {"pattern":{"drinks":"?drinks"}}],
+"shortCircuit":true}
+```
+
 A `code` value is string of Javascript or an array of strings of
 Javascript.  When executed, the Javascript environment includes
 bindings for all variables that are bound at that point in the query
