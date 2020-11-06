@@ -618,6 +618,7 @@ func AndQueryFromMap(ctx *Context, m map[string]interface{}) (Query, bool, error
 
 type OrQuery struct {
 	Disjuncts []Query
+	ShortCircuit bool
 }
 
 func (q OrQuery) MarshalJSON() ([]byte, error) {
@@ -628,6 +629,9 @@ func (q OrQuery) MarshalJSON() ([]byte, error) {
 		return nil, err
 	}
 	buf.Write(js)
+	if q.ShortCircuit {
+		buf.WriteString(`,"shortCircuit": true`)
+	}
 	buf.WriteString(`}`)
 	return buf.Bytes(), nil
 }
@@ -640,6 +644,9 @@ func (o OrQuery) Exec(ctx *Context, loc *Location, qc QueryContext, qr QueryResu
 			return nil, err
 		}
 		acc.Bss = append(acc.Bss, more.Bss...)
+		if o.ShortCircuit && len(more.Bss) > 0 {
+			break
+		}
 	}
 	return &acc, nil
 }
@@ -668,6 +675,18 @@ func OrQueryFromMap(ctx *Context, m map[string]interface{}) (Query, bool, error)
 		qs = append(qs, got)
 	}
 	q.Disjuncts = qs
+
+	for _, candidate := range []string{"shortCircuit", "ShortCircuit", "short_circuit", "shortcircuit"} {
+		sc, ok := m[candidate]
+		if ok {
+			scBool, ok := sc.(bool)
+			if ok {
+				q.ShortCircuit = scBool
+				break
+			}
+			return nil, false, fmt.Errorf("field %s: %v isn't a bool", candidate, sc)
+		}
+	}
 
 	return q, true, nil
 }

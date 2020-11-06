@@ -237,6 +237,14 @@ func TestQueryOr(t *testing.T) {
 	assert.NoError(t, err)
 }
 
+func TestQueryOrShortCircuit(t *testing.T) {
+	err := doQueryTest(t,
+		[]string{`{"likes":"chips"}`, `{"likes":"tacos"}`, `{"drinks":"beer"}`},
+		`{"shortCircuit": true, "or":[{"pattern": {"likes":"?likes"}},{"pattern": {"drinks":"?drinks"}}]}`,
+		`[{"?likes":"tacos"},{"?likes":"chips"}]`)
+	assert.NoError(t, err)
+}
+
 func TestQueryAnd(t *testing.T) {
 	err := doQueryTest(t,
 		[]string{`{"likes":"rum"}`, `{"likes":"tacos"}`, `{"drinks":"rum"}`},
@@ -307,6 +315,13 @@ func BenchmarkQueryOr(b *testing.B) {
 		`{"or":[{"pattern": {"likes":"?likes"}},{"pattern": {"drinks":"?drinks"}}]}`,
 		`[{"?likes":"tacos"},{"?likes":"tacos"},{"?drinks":"beer"}]`)
 }
+
+func BenchmarkQueryOrShortCircuit(b *testing.B) {
+	doQueryBenchmark(b,
+		[]string{`{"likes":"chips"}`, `{"likes":"tacos"}`, `{"drinks":"beer"}`},
+		`{"shortCircuit": true, "or":[{"pattern": {"likes":"?likes"}},{"pattern": {"drinks":"?drinks"}}]}`,
+		`[{"?likes":"tacos"},{"?likes":"chips"}]`)
+	}
 
 func BenchmarkQueryAnd(b *testing.B) {
 	doQueryBenchmark(b,
@@ -462,8 +477,25 @@ func TestOrQueryFromMapBad2(t *testing.T) {
 	}
 }
 
-func TestOrQueryFromMapGood(t *testing.T) {
+func TestOrQueryFromMapBad3(t *testing.T) {
+	m := map[string]interface{}{"or": []interface{}{}, "shortCircuit": "malformed"}
+	_, _, err := OrQueryFromMap(nil, m)
+	if err == nil {
+		t.Fatal("should have reported an error")
+	}
+}
+
+
+func TestOrQueryFromMapGood1(t *testing.T) {
 	m := map[string]interface{}{"or": []interface{}{}}
+	_, _, err := OrQueryFromMap(nil, m)
+	if err != nil {
+		t.Fatal("shouldn't have reported an error")
+	}
+}
+
+func TestOrQueryFromMapGood2(t *testing.T) {
+	m := map[string]interface{}{"or": []interface{}{}, "shortCircuit": false}
 	_, _, err := OrQueryFromMap(nil, m)
 	if err != nil {
 		t.Fatal("shouldn't have reported an error")

@@ -137,6 +137,10 @@
       "description": "Or operation",
       "type": "object",
       "properties": {
+        "shortCircuit": {
+          "description": "whether the or operation should stop after the first query that successfully returns bindings",
+          "type": "boolean"
+        },
         "or": {
           "description": "List of queries",
           "type": "array",
