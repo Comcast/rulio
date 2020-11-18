@@ -617,7 +617,7 @@ func AndQueryFromMap(ctx *Context, m map[string]interface{}) (Query, bool, error
 }
 
 type OrQuery struct {
-	Disjuncts []Query
+	Disjuncts    []Query
 	ShortCircuit bool
 }
 
@@ -638,14 +638,17 @@ func (q OrQuery) MarshalJSON() ([]byte, error) {
 
 func (o OrQuery) Exec(ctx *Context, loc *Location, qc QueryContext, qr QueryResult) (*QueryResult, error) {
 	acc := QueryResult{make([]Bindings, 0, 0), qr.Checked, qr.Elapsed}
-	for _, q := range o.Disjuncts {
-		more, err := q.Exec(ctx, loc, qc, qr)
-		if nil != err {
-			return nil, err
-		}
-		acc.Bss = append(acc.Bss, more.Bss...)
-		if o.ShortCircuit && len(more.Bss) > 0 {
-			break
+	for _, bs := range qr.Bss {
+		qr := QueryResult{[]Bindings{bs}, 0, 0}
+		for _, q := range o.Disjuncts {
+			more, err := q.Exec(ctx, loc, qc, qr)
+			if nil != err {
+				return nil, err
+			}
+			acc.Bss = append(acc.Bss, more.Bss...)
+			if o.ShortCircuit && len(more.Bss) > 0 {
+				break
+			}
 		}
 	}
 	return &acc, nil

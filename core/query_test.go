@@ -147,7 +147,7 @@ func ParseQueryFromJSON(ctx *Context, s string) (Query, error) {
 	return ParseQuery(ctx, x)
 }
 
-func doQueryTest(t *testing.T, facts []string, query string, bss string) error {
+func doQueryTest(t *testing.T, facts []string, query string, bss string, initialBss ...Bindings) error {
 	ctx := NewContext("TestSystem")
 	loc, err := NewLocation(ctx, "test", nil, nil)
 	if err != nil {
@@ -170,7 +170,11 @@ func doQueryTest(t *testing.T, facts []string, query string, bss string) error {
 	}
 
 	qc := QueryContext{}
-	qr, err := q.Exec(ctx, loc, qc, InitialQueryResult(ctx))
+	qrInit := QueryResult{initialBss, 0, 0}
+	if len(qrInit.Bss) == 0 {
+		qrInit = InitialQueryResult(ctx)
+	}
+	qr, err := q.Exec(ctx, loc, qc, qrInit)
 
 	if nil != err {
 		return err
@@ -242,6 +246,14 @@ func TestQueryOrShortCircuit(t *testing.T) {
 		[]string{`{"likes":"chips"}`, `{"likes":"tacos"}`, `{"drinks":"beer"}`},
 		`{"shortCircuit": true, "or":[{"pattern": {"likes":"?likes"}},{"pattern": {"drinks":"?drinks"}}]}`,
 		`[{"?likes":"tacos"},{"?likes":"chips"}]`)
+	assert.NoError(t, err)
+
+	err = doQueryTest(t,
+		[]string{`{"likes":"chips"}`, `{"likes":"tacos"}`, `{"drinks":"beer"}`},
+		`{"shortCircuit": true, "or":[{"pattern": {"likes":"?likes"}},{"pattern": {"drinks":"?drinks"}}]}`,
+		`[{"?likes":"tacos"},{"?likes":"sandwiches","?drinks":"beer"}]`,
+		Bindings{"?likes": "tacos"}, Bindings{"?likes": "sandwiches"},
+	)
 	assert.NoError(t, err)
 }
 
@@ -321,7 +333,7 @@ func BenchmarkQueryOrShortCircuit(b *testing.B) {
 		[]string{`{"likes":"chips"}`, `{"likes":"tacos"}`, `{"drinks":"beer"}`},
 		`{"shortCircuit": true, "or":[{"pattern": {"likes":"?likes"}},{"pattern": {"drinks":"?drinks"}}]}`,
 		`[{"?likes":"tacos"},{"?likes":"chips"}]`)
-	}
+}
 
 func BenchmarkQueryAnd(b *testing.B) {
 	doQueryBenchmark(b,
@@ -484,7 +496,6 @@ func TestOrQueryFromMapBad3(t *testing.T) {
 		t.Fatal("should have reported an error")
 	}
 }
-
 
 func TestOrQueryFromMapGood1(t *testing.T) {
 	m := map[string]interface{}{"or": []interface{}{}}
