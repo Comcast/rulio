@@ -806,7 +806,7 @@ but our use cases mostly seemed to ignore the wildcard variable
 bindings.  (A previous implementation had wildcards; they could
 reappear if useful.)
 
-Note that [rule indexing](Design.md#processing) is harder when
+Note that [rule indexing](design.md#processing) is harder when
 matching can be partial.
 
 #### Matching Limitations
