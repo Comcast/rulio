@@ -27,6 +27,7 @@ import (
 	"runtime"
 	"runtime/pprof"
 	"strconv"
+	"strings"
 	"sync/atomic"
 	"time"
 )
@@ -82,7 +83,7 @@ func (s StringSet) Add(x string) StringSet {
 
 // AddAll adds all elements of the given set to the set.
 func (s StringSet) AddAll(more StringSet) StringSet {
-	for x, _ := range more {
+	for x := range more {
 		s.Add(x)
 	}
 	return s
@@ -111,7 +112,7 @@ func (s StringSet) Contains(x string) bool {
 //
 // The receiver is modified.
 func (s StringSet) Intersect(t StringSet) {
-	for x, _ := range s {
+	for x := range s {
 		_, have := t[x]
 		if !have {
 			delete(s, x)
@@ -130,7 +131,7 @@ func (xs StringSet) json() string {
 // Array returns a pointer to an array of the set's elements.
 func (xs StringSet) Array() []string {
 	acc := make([]string, 0, len(xs))
-	for x, _ := range xs {
+	for x := range xs {
 		acc = append(acc, x)
 	}
 	return acc
@@ -143,12 +144,12 @@ func (xs StringSet) Array() []string {
 func (xs StringSet) Difference(ys StringSet) (StringSet, StringSet) {
 	left := make(StringSet)
 	right := make(StringSet)
-	for x, _ := range xs {
+	for x := range xs {
 		if !ys.Contains(x) {
 			left.Add(x)
 		}
 	}
-	for y, _ := range ys {
+	for y := range ys {
 		if !xs.Contains(y) {
 			right.Add(y)
 		}
@@ -574,4 +575,12 @@ func Copy(x interface{}) interface{} {
 	default:
 		return x
 	}
+}
+
+func IsVariable(s string) bool {
+	return strings.HasPrefix(s, "?")
+}
+
+func IsConstant(s string) bool {
+	return !IsVariable(s)
 }
