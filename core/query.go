@@ -29,7 +29,7 @@ import (
 func (bs *Bindings) Bind(ctx *Context, pat interface{}) interface{} {
 	switch v := pat.(type) {
 	case string:
-		if IsVariable(v) {
+		if isVariable(v) {
 			binding, found := (*bs)[v]
 			if found {
 				return interface{}(binding)
@@ -831,4 +831,8 @@ func (q *GenericQuery) UnmarshalJSON(bs []byte) error {
 	}
 	q.query = query
 	return nil
+}
+
+func isVariable(s string) bool {
+	return strings.HasPrefix(s, "?")
 }

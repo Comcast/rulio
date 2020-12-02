@@ -210,7 +210,7 @@ func ExtractTerms(ctx *Context, fact map[string]interface{}) []string {
 func extractTermsAux(ctx *Context, x interface{}, terms StringSet, depth int) {
 	switch vv := x.(type) {
 	case string:
-		if !IsVariable(vv) {
+		if !isVariable(vv) {
 			if len(vv) < SystemParameters.StringLengthTermLimit {
 				terms.Add(vv)
 			}
@@ -471,7 +471,7 @@ func (s *IndexedState) remHooks(ctx *Context) error {
 		// Consider the lock.
 		s.withPrivilege(ctx)
 		defer s.withoutPrivilege(ctx)
-		for id, _ := range s.IdToFact {
+		for id := range s.IdToFact {
 			err := s.remHook(ctx, s, id)
 			if err != nil {
 				Log(ERROR, ctx, "IndexedState.Clear", "state", s.Name, "error", err,
