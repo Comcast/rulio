@@ -829,7 +829,6 @@ Also see
 2. [`core.unify`](https://github.com/clojure/core.unify).  Not used here.
 3. Norvig's [`patmatch`](http://norvig.com/paip/patmatch.lisp) [from 1991](http://norvig.com/paip.html).
 
-
 ### External fact services
 
 A rule condition can query external facts served by an external fact
@@ -914,6 +913,20 @@ or this
 ```Javascript
 {"error":"Did not work."}
 ```
+
+### Advanced pattern matching
+
+The pattern matching used by Rulio is abstracted behind a Go interface, and can
+be replaced by the user in a custom implementation of the engine.  By default,
+the pattern matching is provided by the `github.com/Comcast/sheens/match`
+package.  However, by replacing the `core.DefaultMatcher` variable, one can
+provide a superset of pattern matching features.
+
+#### Optional fields
+
+The `github.com/Comcast/sheens/match` package provides capability for pattern
+matching with optional fields.  Please see [the sheens repository for
+details](https://github.com/Comcast/sheens#experimental-optional-pattern-variables).
 
 ## API Summary
 
