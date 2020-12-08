@@ -13,7 +13,7 @@ var (
 	CheckForBadPropertyVariables = true
 
 	// DefaultMatcher is the Matcher used by the core package.
-	DefaultMatcher = MapCastMatcher{SheensMatcher{&match.Matcher{}}}
+	DefaultMatcher = CastMatcher{SheensMatcher{&match.Matcher{}}}
 )
 
 // Match provides backwards compatibility around the Matcher interface.
@@ -59,39 +59,37 @@ func (m SheensMatcher) Match(pattern, fact interface{}, bs Bindings) ([]Bindings
 	return bss, err
 }
 
-// MapCastMatcher is a wrapper for casting Map values to
-// map[string]interface{}, and slices to []interface{}.
-type MapCastMatcher struct {
+// CastMatcher is a wrapper for casting Map values to map[string]interface{},
+// and slices to []interface{}.
+type CastMatcher struct {
 	Matcher
 }
 
 // Match implements the Matcher interface.
-func (m MapCastMatcher) Match(pattern, fact interface{}, bs Bindings) ([]Bindings, error) {
-	var cast func(interface{}) interface{}
-
-	cast = func(iface interface{}) interface{} {
-		switch v := iface.(type) {
-		case Map, map[string]interface{}:
-			m, ok := v.(map[string]interface{})
-			if !ok {
-				m = map[string]interface{}(v.(Map))
-			}
-			for k, v := range m {
-				m[k] = cast(v)
-			}
-			iface = m
-		case []interface{}:
-			for i := range v {
-				v[i] = cast(v[i])
-			}
-			iface = v
-		default:
-			if v, ok := ISlice(v); ok {
-				iface = v
-			}
-		}
-		return iface
-	}
-
+func (m CastMatcher) Match(pattern, fact interface{}, bs Bindings) ([]Bindings, error) {
 	return m.Matcher.Match(cast(pattern), cast(fact), bs)
+}
+
+func cast(iface interface{}) interface{} {
+	switch v := iface.(type) {
+	case Map, map[string]interface{}:
+		m, ok := v.(map[string]interface{})
+		if !ok {
+			m = map[string]interface{}(v.(Map))
+		}
+		for k, v := range m {
+			m[k] = cast(v)
+		}
+		iface = m
+	case []interface{}:
+		for i := range v {
+			v[i] = cast(v[i])
+		}
+		iface = v
+	default:
+		if v, ok := ISlice(v); ok {
+			iface = v
+		}
+	}
+	return iface
 }
