@@ -1,6 +1,8 @@
 package core
 
-import "github.com/Comcast/sheens/match"
+import (
+	"github.com/Comcast/sheens/match"
+)
 
 var (
 	// AllowPropertyVariables enables the experimental support for a property
@@ -13,7 +15,11 @@ var (
 	CheckForBadPropertyVariables = true
 
 	// DefaultMatcher is the Matcher used by the core package.
-	DefaultMatcher = CastMatcher{SheensMatcher{&match.Matcher{}}}
+	DefaultMatcher = CastMatcher{SheensMatcher{&match.Matcher{
+		AllowPropertyVariables:       AllowPropertyVariables,
+		CheckForBadPropertyVariables: CheckForBadPropertyVariables,
+		Inequalities:                 true,
+	}}}
 )
 
 // Match provides backwards compatibility around the Matcher interface.
@@ -48,9 +54,6 @@ type SheensMatcher struct {
 
 // Match implements the Matcher interface.
 func (m SheensMatcher) Match(pattern, fact interface{}, bs Bindings) ([]Bindings, error) {
-	m.Matcher.AllowPropertyVariables = AllowPropertyVariables
-	m.Matcher.CheckForBadPropertyVariables = CheckForBadPropertyVariables
-
 	bssExt, err := m.Matcher.Match(pattern, fact, match.Bindings(bs))
 	bss := make([]Bindings, len(bssExt))
 	for i := range bssExt {
