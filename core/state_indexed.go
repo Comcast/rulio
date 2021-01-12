@@ -471,7 +471,7 @@ func (s *IndexedState) remHooks(ctx *Context) error {
 		// Consider the lock.
 		s.withPrivilege(ctx)
 		defer s.withoutPrivilege(ctx)
-		for id, _ := range s.IdToFact {
+		for id := range s.IdToFact {
 			err := s.remHook(ctx, s, id)
 			if err != nil {
 				Log(ERROR, ctx, "IndexedState.Clear", "state", s.Name, "error", err,

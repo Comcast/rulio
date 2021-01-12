@@ -4,6 +4,7 @@ go 1.14
 
 require (
 	github.com/AdRoll/goamz v0.0.0-20170825154802-2731d20f46f4
+	github.com/Comcast/sheens v2.0.0+incompatible
 	github.com/bitly/go-simplejson v0.5.0 // indirect
 	github.com/boltdb/bolt v1.3.1
 	github.com/cbroglie/mapstructure v0.0.0-20161118233042-300500ef91c1 // indirect

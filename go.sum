@@ -1,5 +1,7 @@
 github.com/AdRoll/goamz v0.0.0-20170825154802-2731d20f46f4 h1:xzluFfVIEMHH8q/ICXn4/o4ZyRvM9RrguwDZQHiyzzM=
 github.com/AdRoll/goamz v0.0.0-20170825154802-2731d20f46f4/go.mod h1:bix3XpsJxNavm6XVKAuEFzG+1W3ORxj7hvbIrFr7Sqs=
+github.com/Comcast/sheens v2.0.0+incompatible h1:sGZb70pq4dS6Lxn0XvB+UUAkuf+9T7b+iHZprb5aBKw=
+github.com/Comcast/sheens v2.0.0+incompatible/go.mod h1:jYQUmcnoOmWvycr4Gj1DGLYGE2ZORRMdMJ3eWtEWh/4=
 github.com/bitly/go-hostpool v0.0.0-20171023180738-a3a6125de932 h1:mXoPYz/Ul5HYEDvkta6I8/rnYM5gSdSV2tJ6XbZuEtY=
 github.com/bitly/go-hostpool v0.0.0-20171023180738-a3a6125de932/go.mod h1:NOuUCSz6Q9T7+igc/hlvDOUdtWKryOrtFyIVABv/p7k=
 github.com/bitly/go-simplejson v0.5.0 h1:6IH+V8/tVMab511d5bn4M7EwGXZf9Hj6i2xSwkNEM+Y=
