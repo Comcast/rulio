@@ -91,7 +91,7 @@ func cast(iface interface{}) interface{} {
 		iface = v
 	default:
 		if v, ok := ISlice(v); ok {
-			iface = v
+			iface = cast(v)
 		}
 	}
 	return iface
