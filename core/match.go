@@ -15,11 +15,11 @@ var (
 	CheckForBadPropertyVariables = true
 
 	// DefaultMatcher is the Matcher used by the core package.
-	DefaultMatcher = CastMatcher{SheensMatcher{&match.Matcher{
+	DefaultMatcher = Matcher(CastMatcher{SheensMatcher{&match.Matcher{
 		AllowPropertyVariables:       AllowPropertyVariables,
 		CheckForBadPropertyVariables: CheckForBadPropertyVariables,
 		Inequalities:                 true,
-	}}}
+	}}})
 )
 
 // Match provides backwards compatibility around the Matcher interface.
