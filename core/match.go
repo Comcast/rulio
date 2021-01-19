@@ -15,11 +15,11 @@ var (
 	CheckForBadPropertyVariables = true
 
 	// DefaultMatcher is the Matcher used by the core package.
-	DefaultMatcher = CastMatcher{SheensMatcher{&match.Matcher{
+	DefaultMatcher = Matcher(CastMatcher{SheensMatcher{&match.Matcher{
 		AllowPropertyVariables:       AllowPropertyVariables,
 		CheckForBadPropertyVariables: CheckForBadPropertyVariables,
 		Inequalities:                 true,
-	}}}
+	}}})
 )
 
 // Match provides backwards compatibility around the Matcher interface.
@@ -80,18 +80,20 @@ func cast(iface interface{}) interface{} {
 		if !ok {
 			m = map[string]interface{}(v.(Map))
 		}
+		n := make(map[string]interface{})
 		for k, v := range m {
-			m[k] = cast(v)
+			n[k] = cast(v)
 		}
-		iface = m
+		return n
 	case []interface{}:
+		n := make([]interface{}, len(v))
 		for i := range v {
-			v[i] = cast(v[i])
+			n[i] = cast(v[i])
 		}
-		iface = v
+		return n
 	default:
 		if v, ok := ISlice(v); ok {
-			iface = cast(v)
+			return cast(v)
 		}
 	}
 	return iface
