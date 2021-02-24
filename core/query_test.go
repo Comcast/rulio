@@ -23,6 +23,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/robertkrimen/otto"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -511,4 +512,88 @@ func TestOrQueryFromMapGood2(t *testing.T) {
 	if err != nil {
 		t.Fatal("shouldn't have reported an error")
 	}
+}
+
+type QueryWrapperApp struct {
+	Query    Query
+	PreExec  func(ctx *Context, loc *Location, qc QueryContext, qr QueryResult) (*QueryResult, error)
+	PostExec func(ctx *Context, loc *Location, qc QueryContext, qr QueryResult) (*QueryResult, error)
+}
+
+func (app QueryWrapperApp) Exec(ctx *Context, loc *Location, qc QueryContext, qr QueryResult) (*QueryResult, error) {
+	r := &qr
+	var err error
+	if app.PreExec != nil {
+		r, err = app.PreExec(ctx, loc, qc, *r)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	r, err = app.Query.Exec(ctx, loc, qc, *r)
+	if err != nil {
+		return nil, err
+	}
+
+	if app.PostExec != nil {
+		r, err = app.PostExec(ctx, loc, qc, *r)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return r, nil
+}
+
+func (app QueryWrapperApp) ProcessQuery(ctx *Context, m map[string]interface{}, q Query) Query {
+	app.Query = q
+	return app
+}
+
+func (app QueryWrapperApp) GenerateHeaders(ctx *Context) map[string]string {
+	return nil
+}
+
+func (app QueryWrapperApp) ProcessBindings(ctx *Context, bs Bindings) Bindings {
+	return bs
+}
+
+func (app QueryWrapperApp) UpdateJavascriptRuntime(ctx *Context, runtime *otto.Otto) error {
+	return nil
+}
+
+func TestAppProcessQuery(t *testing.T) {
+	var hitCount int
+
+	ctx := NewContext("test")
+	ctx.App = QueryWrapperApp{
+		PreExec: func(ctx *Context, loc *Location, qc QueryContext, qr QueryResult) (*QueryResult, error) {
+			hitCount++
+			return &qr, nil
+		},
+	}
+
+	loc, err := NewLocation(ctx, "test", nil, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if err = loc.Clear(ctx); err != nil {
+		t.Fatal(err)
+	}
+
+	q, err := ParseQueryFromJSON(ctx, `{"or":[{"code": "true"}, {"code": "false"}]}`)
+	if nil != err {
+		t.Fatal(err)
+	}
+
+	qc := QueryContext{}
+	qrInit := QueryResult{[]Bindings{}, 0, 0}
+	if len(qrInit.Bss) == 0 {
+		qrInit = InitialQueryResult(ctx)
+	}
+	_, err = q.Exec(ctx, loc, qc, qrInit)
+	assert.NoError(t, err)
+
+	assert.Equal(t, 3, hitCount, fmt.Sprintf("expected 3 executions of the query wrapper %T", q))
 }

@@ -228,6 +228,10 @@ func (ba *BindingApp) UpdateJavascriptRuntime(ctx *Context, runtime *otto.Otto) 
 	return nil
 }
 
+func (ba *BindingApp) ProcessQuery(_ *Context, _ map[string]interface{}, q Query) Query {
+	return q
+}
+
 func TestEventConditionBindings(t *testing.T) {
 	ctx, loc := TestingLocation(t)
 	c := make(chan interface{})
