@@ -757,7 +757,7 @@ func ParseQuery(ctx *Context, m map[string]interface{}) (q Query, err error) {
 	}
 
 	defer func() {
-		if ctx.App != nil {
+		if ctx != nil && ctx.App != nil {
 			q = ctx.App.ProcessQuery(ctx, m, q)
 		}
 	}()
