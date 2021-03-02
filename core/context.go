@@ -31,6 +31,11 @@ type App interface {
 	// UpdateJavascriptRuntime can be used to modify the
 	// Javascript environment for actions and condition code.
 	UpdateJavascriptRuntime(ctx *Context, runtime *otto.Otto) error
+
+	// ProcessQuery can be used to replace or wrap queries when unmarshaling a
+	// rule condition.  The method gets the raw generic query data along with
+	// the query created by Rulio.
+	ProcessQuery(ctx *Context, raw map[string]interface{}, query Query) Query
 }
 
 // Tracer can be used to perform application tracing.

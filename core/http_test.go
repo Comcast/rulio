@@ -156,3 +156,7 @@ func (ha *HeaderApp) ProcessBindings(ctx *Context, bs Bindings) Bindings {
 func (ha *HeaderApp) UpdateJavascriptRuntime(ctx *Context, runtime *otto.Otto) error {
 	return nil
 }
+
+func (ha *HeaderApp) ProcessQuery(_ *Context, _ map[string]interface{}, q Query) Query {
+	return q
+}

@@ -750,17 +750,24 @@ func NotQueryFromMap(ctx *Context, m map[string]interface{}) (Query, bool, error
 	return q, true, nil
 }
 
-func ParseQuery(ctx *Context, m map[string]interface{}) (Query, error) {
+func ParseQuery(ctx *Context, m map[string]interface{}) (q Query, err error) {
 	Log(DEBUG, ctx, "core.ParseQuery", "map", fmt.Sprintf("%#v", m))
 	if len(m) == 0 {
 		return EmptyQuery{}, nil
 	}
+
+	defer func() {
+		if ctx != nil && ctx.App != nil {
+			q = ctx.App.ProcessQuery(ctx, m, q)
+		}
+	}()
+
 	q, applicable, err := CodeQueryFromMap(ctx, m)
 	if applicable {
 		if err != nil {
 			return nil, err
 		} else {
-			return q, nil
+			return
 		}
 	}
 
@@ -769,7 +776,7 @@ func ParseQuery(ctx *Context, m map[string]interface{}) (Query, error) {
 		if err != nil {
 			return nil, err
 		} else {
-			return q, nil
+			return
 		}
 	}
 
@@ -778,7 +785,7 @@ func ParseQuery(ctx *Context, m map[string]interface{}) (Query, error) {
 		if err != nil {
 			return nil, err
 		} else {
-			return q, nil
+			return
 		}
 	}
 
@@ -787,7 +794,7 @@ func ParseQuery(ctx *Context, m map[string]interface{}) (Query, error) {
 		if err != nil {
 			return nil, err
 		} else {
-			return q, nil
+			return
 		}
 	}
 
@@ -796,7 +803,7 @@ func ParseQuery(ctx *Context, m map[string]interface{}) (Query, error) {
 		if err != nil {
 			return nil, err
 		} else {
-			return q, nil
+			return
 		}
 	}
 
