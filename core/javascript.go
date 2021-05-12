@@ -917,13 +917,23 @@ func RunJavascript(ctx *Context, bs *Bindings, props map[string]interface{}, src
 				panic(caught) // Something else happened, so repanic!
 			}
 		}()
-
+		watchdogCleanup := make(chan bool)
 		runtime.Interrupt = make(chan func(), 1) // No blocking
+
+		defer func() {
+			watchdogCleanup<-true
+			close(watchdogCleanup)
+		}()
+
 		go func() {
-			time.Sleep(timeout)
-			runtime.Interrupt <- func() {
-				panic(Halt)
+			select {
+			case <-time.After(timeout):
+				runtime.Interrupt <- func() {
+					panic(Halt)
+				}
+			case <-watchdogCleanup:
 			}
+			close(runtime.Interrupt)
 		}()
 	}
 
