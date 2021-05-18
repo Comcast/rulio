@@ -44,7 +44,7 @@ func (w *FindRules) Do(ctx *Context, loc *Location) {
 
 	Log(DEBUG, ctx, "FindRules.Do", "location", loc.Name, "work", *w)
 
-	var rs map[string]Map
+	var rs map[string]*Rule
 	// Look for a special property that embeds a rule.
 	ruleId, given := w.Event["trigger!"]
 	embedded := false
@@ -55,12 +55,17 @@ func (w *FindRules) Do(ctx *Context, loc *Location) {
 			w.Disposition = &Condition{err.Error(), "fatal"}
 			return
 		}
-		rule, err := loc.GetRule(ctx, id)
+		sRule, err := loc.GetRule(ctx, id)
 		if err != nil {
 			w.Disposition = &Condition{err.Error(), "nonfatal"}
 			return
 		}
-		rs = make(map[string]Map)
+		rule, err := RuleFromMap(ctx, sRule)
+		if err != nil {
+			w.Disposition = &Condition{err.Error(), "nonfatal"}
+			return
+		}
+		rs = make(map[string]*Rule)
 		rs[id] = rule
 	} else {
 		embed, given := w.Event["evaluate!"]
@@ -72,8 +77,13 @@ func (w *FindRules) Do(ctx *Context, loc *Location) {
 				w.Disposition = &Condition{err.Error(), "fatal"}
 				return
 			}
-			rs = make(map[string]Map)
-			rs["embedded"] = Map(m)
+			rule, err := RuleFromMap(ctx, m)
+			if err != nil {
+				w.Disposition = &Condition{err.Error(), "nonfatal"}
+				return
+			}
+			rs = make(map[string]*Rule)
+			rs["embedded"] = rule
 		} else {
 			var err error
 			rs, err = loc.searchRulesAncestors(ctx, w.Event)
@@ -85,23 +95,12 @@ func (w *FindRules) Do(ctx *Context, loc *Location) {
 	}
 
 	w.Children = make([]*EvalRule, 0, 0)
-	for id, m := range rs {
+	for id, rule := range rs {
 		Log(DEBUG, ctx, "FindRules.Do", "rid", id)
-		rule, err := RuleFromMap(ctx, m)
-		if err != nil {
-			// Will be a little odd to arrive here, but
-			// could happen.  A retry is actually
-			// plausible if we go through external queues,
-			// which would allow the code to change.  But
-			// that's a little much.  For now, we'll fail
-			// without retry if anything does wrong in
-			// this function.
-			w.Disposition = &Condition{err.Error(), "fatal"}
-			return
-		}
 		rule.Id = id
 
 		var bss []Bindings
+		var err error
 		if !embedded {
 			if enabled, _ := loc.RuleEnabled(ctx, id); !enabled {
 				// ToDo: Maybe not ignore error.
