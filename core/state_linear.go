@@ -398,7 +398,6 @@ func (s *LinearState) doFindRules(ctx *Context, event Map) (map[string]Map, erro
 
 //FindCachedRules functions similarly to FindRules, except that an in-memory cache is used
 // if a rule is not in the cache, it is added from persistence
-//TODO(racampbe): there is no cache invalidation.  updates to rules will never be realized.
 func (s *LinearState) FindCachedRules(ctx *Context, event Map) (map[string]*Rule, error) {
 	Log(DEBUG, ctx, "LinearState.FindCachedRules", "name", s.Name, "event", event)
 	timer := NewTimer(ctx, "LinearState.FindCachedRules")
