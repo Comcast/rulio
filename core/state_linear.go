@@ -154,7 +154,7 @@ func (s *LinearState) Load(ctx *Context) error {
 
 func (s *LinearState) Add(ctx *Context, id string, x Map) (string, error) {
 	Log(DEBUG, ctx, "LinearState.Add", "state", s.Name, "x", x, "id", id)
-
+	delete(s.cachedRules, id)
 	timer := NewTimer(ctx, "LinearState.Add")
 	defer timer.Stop()
 
@@ -213,6 +213,7 @@ func (s *LinearState) Rem(ctx *Context, id string) (bool, error) {
 
 func (s *LinearState) rem(ctx *Context, id string, lock bool) (bool, error) {
 	Log(DEBUG, ctx, "LinearState.rem", "id", id)
+	delete(s.cachedRules, id)
 	_, err := s.store.Remove(ctx, s.Name, []byte(id))
 	// ToDo: Consider what's returned.
 	if err != nil {

@@ -252,6 +252,7 @@ func extractTermsAux(ctx *Context, x interface{}, terms StringSet, depth int) {
 
 func (s *IndexedState) Add(ctx *Context, id string, x Map) (string, error) {
 	Log(DEBUG, ctx, "IndexedState.Add", "state", s.Name, "factx", x, "id", id)
+	delete(s.cachedRules, id)
 	s.slock(ctx, false)
 	id, err := s.add(ctx, id, x)
 	s.sunlock(ctx, false)
@@ -405,6 +406,7 @@ func (s *IndexedState) Rem(ctx *Context, id string) (bool, error) {
 
 func (s *IndexedState) rem(ctx *Context, id string) (bool, error) {
 	Log(DEBUG, ctx, "IndexedState.rem", "name", s.Name, "id", id)
+	delete(s.cachedRules, id)
 
 	// Currently we don't return an error if the fact isn't found.
 	// ToDo: Reconsider.  For example, maybe have an additional
