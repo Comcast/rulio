@@ -1291,6 +1291,9 @@ func (s *Service) ProcessRequest(ctx *core.Context, m map[string]interface{}, ou
 	return nil, nil
 }
 
+// serviceExiter is an unexported func to allow tests to override and assert that a mocked shutdown has occurred.
+var serviceExiter = os.Exit
+
 func (s *Service) Shutdown(ctx *core.Context) error {
 	core.Log(core.WARN, ctx, "Service.Shutdown")
 	storage, err := s.System.PeekStorage(ctx)
@@ -1308,7 +1311,7 @@ func (s *Service) Shutdown(ctx *core.Context) error {
 	if err != nil {
 		rc = 1
 	}
-	os.Exit(rc)
+	serviceExiter(rc)
 	return nil
 }
 

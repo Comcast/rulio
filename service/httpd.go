@@ -515,6 +515,7 @@ func (s *HTTPService) Start(ctx *core.Context, servicePort string) error {
 		s.Service.Stopper = func(ctx *core.Context, d time.Duration) error {
 			return l.Stop(d)
 		}
+		s.listener = l
 		server.Serve(l)
 		n := l.Drain(5 * time.Second)
 		if n == 0 {
