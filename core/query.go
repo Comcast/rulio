@@ -224,7 +224,9 @@ func (c CodeQuery) Exec(ctx *Context, loc *Location, qc QueryContext, qr QueryRe
 			return nil, err
 		}
 
-		Log(DEBUG, ctx, "CodeQuery.Exec", "got", Gorep(x), "type", fmt.Sprintf("%T", x))
+		if loggable(ctx, DEBUG) {
+			Log(DEBUG, ctx, "CodeQuery.Exec", "got", Gorep(x), "type", fmt.Sprintf("%T", x))
+		}
 		switch vv := x.(type) {
 		case bool:
 			if vv == true {
