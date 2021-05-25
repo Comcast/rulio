@@ -631,8 +631,8 @@ func duplicateId(msg string) error {
 	return fmt.Errorf("duplicate id %s", msg)
 }
 
-func (loc *Location) searchRulesAncestors(ctx *Context, event Map) (map[string]Map, error) {
-	acc := make(map[string]Map)
+func (loc *Location) searchRulesAncestors(ctx *Context, event Map) (map[string]*Rule, error) {
+	acc := make(map[string]*Rule)
 
 	// Local rules shadow those from parents.
 	err := loc.DoAncestors(ctx, func(parent *Location) error {
@@ -654,7 +654,7 @@ func (loc *Location) searchRulesAncestors(ctx *Context, event Map) (map[string]M
 	return acc, err
 }
 
-func (loc *Location) searchRules(ctx *Context, event Map) (map[string]Map, error) {
+func (loc *Location) searchRules(ctx *Context, event Map) (map[string]*Rule, error) {
 	ctx.SetLoc(loc)
 	Log(INFO, ctx, "Location.SearchRules", "location", loc.Name, "event", event)
 	if !loc.Enabled(ctx) {
@@ -670,7 +670,7 @@ func (loc *Location) searchRules(ctx *Context, event Map) (map[string]Map, error
 
 	var err error
 
-	acc, err := loc.state.FindRules(ctx, event)
+	acc, err := loc.state.FindCachedRules(ctx, event)
 	if err != nil {
 		Log(ERROR, ctx, "Location.SearchRules", "error", err, "location", loc.Name)
 	}
@@ -680,7 +680,7 @@ func (loc *Location) searchRules(ctx *Context, event Map) (map[string]Map, error
 	return acc, err
 }
 
-func (loc *Location) SearchRules(ctx *Context, event Map, includeInherited bool) (map[string]Map, error) {
+func (loc *Location) SearchRules(ctx *Context, event Map, includeInherited bool) (map[string]*Rule, error) {
 	// Chorus: Who then is ruler of necessity?
 	// Prometheus: The triple Fates and unforgetting Furies.
 	//
@@ -699,7 +699,7 @@ func (loc *Location) SearchRules(ctx *Context, event Map, includeInherited bool)
 	Inc(&loc.stats.TotalCalls, 1)
 	Inc(&loc.stats.SearchRules, 1)
 
-	var acc map[string]Map
+	var acc map[string]*Rule
 	var err error
 	if includeInherited {
 		acc, err = loc.searchRulesAncestors(ctx, event)

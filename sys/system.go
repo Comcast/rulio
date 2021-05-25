@@ -1233,16 +1233,16 @@ func (sys *System) SearchRules(ctx *Context, location string, event string, incl
 	var acc map[string]string
 	if err == nil {
 		Metric(ctx, "System.SearchRules", "location", location, "event", event)
-		var rules map[string]Map
+		var rules map[string]*Rule
 		rules, err = loc.SearchRules(ctx, m, includeInherited)
 		if err == nil {
 			acc = make(map[string]string, len(rules))
 			for id, rule := range rules {
-				var js string
-				if js, err = rule.JSON(); err != nil {
+				var js []byte
+				if js, err = json.Marshal(rule); err != nil {
 					break
 				}
-				acc[id] = js
+				acc[id] = string(js)
 			}
 		}
 	}

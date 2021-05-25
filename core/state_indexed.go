@@ -58,6 +58,8 @@ type IndexedState struct {
 	// Loaded indicates whether we have loaded data from Store.
 	Loaded bool
 
+	cachedRules map[string]*Rule
+
 	addHook AddHookFn
 
 	remHook RemHookFn
@@ -109,6 +111,7 @@ func NewIndexedState(ctx *Context, name string, store Storage) (*IndexedState, e
 		return nil, err
 	}
 	s.Store = store
+	s.cachedRules = make(map[string]*Rule)
 	return &s, nil
 }
 
@@ -249,6 +252,7 @@ func extractTermsAux(ctx *Context, x interface{}, terms StringSet, depth int) {
 
 func (s *IndexedState) Add(ctx *Context, id string, x Map) (string, error) {
 	Log(DEBUG, ctx, "IndexedState.Add", "state", s.Name, "factx", x, "id", id)
+	delete(s.cachedRules, id)
 	s.slock(ctx, false)
 	id, err := s.add(ctx, id, x)
 	s.sunlock(ctx, false)
@@ -402,6 +406,7 @@ func (s *IndexedState) Rem(ctx *Context, id string) (bool, error) {
 
 func (s *IndexedState) rem(ctx *Context, id string) (bool, error) {
 	Log(DEBUG, ctx, "IndexedState.rem", "name", s.Name, "id", id)
+	delete(s.cachedRules, id)
 
 	// Currently we don't return an error if the fact isn't found.
 	// ToDo: Reconsider.  For example, maybe have an additional
@@ -491,6 +496,7 @@ func (s *IndexedState) Clear(ctx *Context) error {
 	s.slock(ctx, false)
 	defer s.sunlock(ctx, false)
 
+	s.cachedRules = make(map[string]*Rule)
 	if err := s.remHooks(ctx); err != nil {
 		return err
 	}
@@ -507,6 +513,8 @@ func (s *IndexedState) Delete(ctx *Context) error {
 	Log(DEBUG, ctx, "IndexedState.Delete", "name", s.Name)
 	s.slock(ctx, false)
 	defer s.sunlock(ctx, false)
+
+	s.cachedRules = make(map[string]*Rule)
 	if err := s.remHooks(ctx); err != nil {
 		return err
 	}
@@ -675,6 +683,10 @@ func (s *IndexedState) FindRules(ctx *Context, event Map) (map[string]Map, error
 	timer := NewTimer(ctx, "IndexedState.FindRules")
 	defer timer.Stop()
 
+	return s.doFindRules(ctx, event)
+}
+
+func (s *IndexedState) doFindRules(ctx *Context, event Map) (map[string]Map, error) {
 	s.slock(ctx, true)
 	defer s.sunlock(ctx, true)
 
@@ -723,5 +735,31 @@ func (s *IndexedState) FindRules(ctx *Context, event Map) (map[string]Map, error
 		acc[id] = body
 	}
 	Log(DEBUG, ctx, "IndexedState.FindRules", "rules", acc)
+	return acc, nil
+}
+
+func (s *IndexedState) FindCachedRules(ctx *Context, event Map) (map[string]*Rule, error) {
+	Log(DEBUG, ctx, "IndexedState.FindCachedRules", "name", s.Name, "event", event)
+	timer := NewTimer(ctx, "IndexedState.FindCachedRules")
+	defer timer.Stop()
+
+	rules, err := s.doFindRules(ctx, event)
+	if err != nil {
+		return nil, err
+	}
+
+	acc := make(map[string]*Rule)
+	for id, r := range rules {
+		if _, isCached := s.cachedRules[id]; isCached {
+			acc[id] = s.cachedRules[id]
+		} else {
+			rule, err := RuleFromMap(ctx, r)
+			if err != nil {
+				return nil, err
+			}
+			acc[id] = rule
+			s.cachedRules[id] = rule
+		}
+	}
 	return acc, nil
 }

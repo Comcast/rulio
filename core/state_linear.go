@@ -40,6 +40,8 @@ type LinearState struct {
 
 	Facts map[string]RawFact
 
+	cachedRules map[string]*Rule
+
 	store Storage
 
 	addHook AddHookFn
@@ -84,6 +86,7 @@ func NewLinearState(ctx *Context, name string, store Storage) (*LinearState, err
 	s.Name = name
 	s.store = store
 	s.Facts = make(map[string]RawFact)
+	s.cachedRules = make(map[string]*Rule)
 	return s, nil
 }
 
@@ -151,7 +154,7 @@ func (s *LinearState) Load(ctx *Context) error {
 
 func (s *LinearState) Add(ctx *Context, id string, x Map) (string, error) {
 	Log(DEBUG, ctx, "LinearState.Add", "state", s.Name, "x", x, "id", id)
-
+	delete(s.cachedRules, id)
 	timer := NewTimer(ctx, "LinearState.Add")
 	defer timer.Stop()
 
@@ -210,6 +213,7 @@ func (s *LinearState) Rem(ctx *Context, id string) (bool, error) {
 
 func (s *LinearState) rem(ctx *Context, id string, lock bool) (bool, error) {
 	Log(DEBUG, ctx, "LinearState.rem", "id", id)
+	delete(s.cachedRules, id)
 	_, err := s.store.Remove(ctx, s.Name, []byte(id))
 	// ToDo: Consider what's returned.
 	if err != nil {
@@ -330,6 +334,10 @@ func (s *LinearState) FindRules(ctx *Context, event Map) (map[string]Map, error)
 	timer := NewTimer(ctx, "LinearState.FindRules")
 	defer timer.Stop()
 
+	return s.doFindRules(ctx, event)
+}
+
+func (s *LinearState) doFindRules(ctx *Context, event Map) (map[string]Map, error) {
 	// We could call Search(), but we'll try to be a bit
 	// more efficient here.
 	acc := make(map[string]Map)
@@ -389,12 +397,41 @@ func (s *LinearState) FindRules(ctx *Context, event Map) (map[string]Map, error)
 	return acc, nil
 }
 
+//FindCachedRules functions similarly to FindRules, except that an in-memory cache is used
+// if a rule is not in the cache, it is added from persistence
+func (s *LinearState) FindCachedRules(ctx *Context, event Map) (map[string]*Rule, error) {
+	Log(DEBUG, ctx, "LinearState.FindCachedRules", "name", s.Name, "event", event)
+	timer := NewTimer(ctx, "LinearState.FindCachedRules")
+	defer timer.Stop()
+
+	rules, err := s.doFindRules(ctx, event)
+	if err != nil {
+		return nil, err
+	}
+
+	acc := make(map[string]*Rule)
+	for id, r := range rules {
+		if _, isCached := s.cachedRules[id]; isCached {
+			acc[id] = s.cachedRules[id]
+		} else {
+			rule, err := RuleFromMap(ctx, r)
+			if err != nil {
+				return nil, err
+			}
+			acc[id] = rule
+			s.cachedRules[id] = rule
+		}
+	}
+	return acc, nil
+}
+
 func (s *LinearState) Clear(ctx *Context) error {
 	Log(INFO, ctx, "LinearState.Clear", "name", s.Name)
 	_, err := s.store.Clear(ctx, s.Name)
 	// Maybe protect the store (above), too.
 	s.slock(ctx, false)
 	s.Facts = make(map[string]RawFact)
+	s.cachedRules = make(map[string]*Rule)
 	s.sunlock(ctx, false)
 	return err
 }
@@ -405,6 +442,7 @@ func (s *LinearState) Delete(ctx *Context) error {
 	// Maybe protect the store (above), too.
 	s.slock(ctx, false)
 	s.Facts = make(map[string]RawFact)
+	s.cachedRules = make(map[string]*Rule)
 	s.sunlock(ctx, false)
 	return err
 }
