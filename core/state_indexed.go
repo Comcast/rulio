@@ -247,7 +247,9 @@ func extractTermsAux(ctx *Context, x interface{}, terms StringSet, depth int) {
 		// we otherwise choose to ignore.  Numbers, for
 		// example.
 	}
-	Log(DEBUG, ctx, "core.extractTermsAux", "input", Gorep(x), "terms", terms)
+	if loggable(ctx, DEBUG) {
+		Log(DEBUG, ctx, "core.extractTermsAux", "input", Gorep(x), "terms", terms)
+	}
 }
 
 func (s *IndexedState) Add(ctx *Context, id string, x Map) (string, error) {
