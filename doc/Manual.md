@@ -356,9 +356,11 @@ the matching rule id respectively.
 
 The `code` is evaluated as a block, so the value of the last
 expression becomes the value of the code block.  No explicit `return`
-is needed or permitted.  If `code` is present, then a `libraries`
-property is supported as documented in
-[In-process Javascript actions](#in-process-javascript-actions).
+is needed or permitted by default.  If the `ScopedJavascriptRuntimes`
+parameter is set to true (default false), the Javascript will run in
+an anonymous function and must have a `return` for condition evaluation.
+If `code` is present, then a `libraries` property is supported as documented
+in [In-process Javascript actions](#in-process-javascript-actions).
 
 If the value returned by the block is truthy, then the condition
 evaluation continues.  In addition, if the value returned is an

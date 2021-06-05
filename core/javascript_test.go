@@ -20,8 +20,178 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"sync"
 	"testing"
 )
+
+//TODO(racampbe): don't commit this. use it as a code playground
+func TestDeleteme(t *testing.T) {
+	bs := make(Bindings)
+	bs["x"] = 2
+	SystemParameters.ScopedJavascriptRuntimes = true
+	_, err := RunJavascript(nil, &bs, nil, "x=x+1; if (x!=3) { Env.log('x is not 3: ' + x) }")
+	if err != nil {
+		t.Error(err)
+	}
+
+	_, err = RunJavascript(nil, &bs, nil, "x=x+1; if (x!=3) { Env.log('x is not 3: ' + x) }")
+	if err != nil {
+		t.Error(err)
+	}
+
+	_, err = RunJavascript(nil, &bs, nil, "x=x+1; if (x!=3) { Env.log('x is not 3: ' + x) }")
+	if err != nil {
+		t.Error(err)
+	}
+}
+
+// tests the 'out' javascript callable
+func TestJavascriptCommunication(t *testing.T) {
+	ctx := NewContext("test")
+	c := make(chan interface{})
+	defer close(c)
+	ctx.AddProp("out", c)
+
+	wg := sync.WaitGroup{}
+	go func() {
+		val :=<- c
+		s, ok := val.(string)
+		if !ok {
+			t.Errorf("expected type from channel communication to be string. value from channel was : %#v", val)
+		}
+
+		if s != "foo" {
+			t.Errorf("expected string 'foo' to be sent on channel. actual was: %s", s)
+		}
+		wg.Done()
+	}()
+
+	wg.Add(1)
+	_, err := RunJavascript(ctx, nil, nil, "Env.out('foo')")
+	if err != nil {
+		t.Error(err)
+	}
+	wg.Wait()
+}
+
+// scoped runtimes without an explicit return will return nil. unscoped runtimes continue to work as expected.
+func TestRunJavascriptRunoffResult(t *testing.T) {
+	ctx := NewContext("TestJavascriptLocation")
+
+	bs := make(Bindings)
+	bs["x"] = 2
+	SystemParameters.ScopedJavascriptRuntimes = true
+
+	// reused/scoped runtimes no longer implicitly return a value
+	val, err := RunJavascript(ctx, &bs,  nil, `x + 2`)
+	if err != nil {
+		t.Error(err)
+	}
+	if val != nil {
+		t.Errorf("expected nil result, got: %#v", val)
+	}
+
+	// explicitly returned values will regain previous behavior
+	val, err = RunJavascript(ctx, &bs,  nil, `return x + 2`)
+	if err != nil {
+		t.Error(err)
+	}
+
+	if v, ok := val.(float64); ok {
+		if v != 4 {
+			t.Errorf("expected 2+2=4, got: %f", v)
+		}
+	} else {
+		t.Errorf("expected return value to be a float, got: %#v", val)
+	}
+
+
+	SystemParameters.ScopedJavascriptRuntimes = false
+	val, err = RunJavascript(ctx, &bs,  nil, `x + 2`)
+	if err != nil {
+		t.Error(err)
+	}
+
+	if v, ok := val.(float64); ok {
+		if v != 4 {
+			t.Errorf("expected 2+2=4, got: %f", v)
+		}
+	} else {
+		t.Errorf("expected return value to be a float, got: %#v", val)
+	}
+}
+
+// verify that javascript won't mutate the bindings pointer
+func TestJavascriptBindingMutation(t *testing.T) {
+	bs := make(Bindings)
+	var val *int
+	val = new(int)
+	*val = 2
+	bs["x"] = val
+	SystemParameters.ScopedJavascriptRuntimes = true
+	_, err := RunJavascript(nil, &bs, nil, "x=x+1")
+	if err != nil {
+		t.Error(err)
+	}
+	if *bs["x"].(*int) != 2 {
+		t.Errorf("Expected bindings not to be changed from javascript execution")
+	}
+
+	SystemParameters.ScopedJavascriptRuntimes = false
+	_, err = RunJavascript(nil, &bs, nil, "x=x+1")
+	if err != nil {
+		t.Error(err)
+	}
+	if *bs["x"].(*int) != 2 {
+		t.Errorf("Expected bindings not to be changed from javascript execution")
+	}
+}
+
+// verify that state doesn't leak between executions
+//note the `var` declaration used.
+func TestJavascriptStateMutation(t *testing.T) {
+	ctx := NewContext("test")
+	c := make(chan interface{})
+	defer close(c)
+	ctx.AddProp("out", c)
+
+	go func() {
+		for val := range c {
+			t.Errorf("was not expecting any value to be sent. '%#v' was unexpected", val)
+		}
+	}()
+
+	bs := make(Bindings)
+	bs["x"] = 2
+	SystemParameters.ScopedJavascriptRuntimes = true
+	for i := 0; i < 10; i++ {
+		_, err := RunJavascript(ctx, &bs, nil, "if (typeof y != 'undefined') { Env.out('y is not undefined') }; var y = 1")
+		if err != nil {
+			t.Error(err)
+		}
+	}
+
+	// if the variable is declared without var, state will leak out of the scope for future executions
+	_, err := RunJavascript(ctx, &bs, nil, "y = 1")
+	if err != nil {
+		t.Error(err)
+	}
+	// there's a chance that the sync.pool will reap a member and create a new runtime in this execution.  We don't have control over this.
+	// in practice, this has not been observed due to these tests being sequential
+	_, err = RunJavascript(ctx, &bs, nil, "if (typeof y == 'undefined') { Env.out('y is undefined, expected to assert state leakage') }")
+	if err != nil {
+		t.Error(err)
+	}
+
+	SystemParameters.ScopedJavascriptRuntimes = false
+	for i := 0; i < 10; i++ {
+		_, err := RunJavascript(ctx, &bs, nil, "if (typeof y != 'undefined') { Env.out('y is not undefined') }; var y = 1")
+		if err != nil {
+			t.Error(err)
+		}
+	}
+
+}
 
 func TestJavascript(t *testing.T) {
 	bs := make(Bindings)

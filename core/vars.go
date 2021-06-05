@@ -140,6 +140,11 @@ type Parameters struct {
 	// CopyEvents will copy the binding for "?event" before giving
 	// that data to condition javascript or a javascript action.
 	CopyEvents bool
+
+	// ScopedJavascriptRuntimes causes the code to be placed within an anonymous function and reuse the javascript runtime.
+	// when enabled, explicit `return` statements are required.  Additionally, naked variable declaration via `x = 1`
+	// may leak into another code script.  variables should be declared with the `var` keyword.
+	ScopedJavascriptRuntimes bool
 }
 
 // Copy makes a shallow (except for DefaultControl) copy.
@@ -186,6 +191,7 @@ func DefaultParameters() *Parameters {
 	ps.HTTPRetryInterval = 20 * time.Second
 	ps.HTTPRetryOn = defaultRetryOn
 	ps.CopyEvents = true
+	ps.ScopedJavascriptRuntimes = false
 	return &ps
 }
 
@@ -217,7 +223,7 @@ func TightParameters() *Parameters {
 	ps.HTTPRetryInterval = 20 * time.Second
 	ps.HTTPRetryOn = defaultRetryOn
 	ps.CopyEvents = true
-
+	ps.ScopedJavascriptRuntimes = false
 	return &ps
 }
 

@@ -114,7 +114,7 @@ func throwJavascript(value otto.Value, _ error) otto.Value {
 	panic(value)
 }
 
-// compileJavascript compiles a code with specified libraries
+// CompileJavascript compiles a code with specified libraries
 func CompileJavascript(ctx *Context, loc *Location, libraries []string, code string) (*otto.Script, error) {
 	if loc != nil {
 		libCode, err := loc.getLibraryCode(ctx, libraries)
@@ -124,7 +124,13 @@ func CompileJavascript(ctx *Context, loc *Location, libraries []string, code str
 		code = libCode + "\n" + code
 	}
 
-	script, err := otto.New().Compile("", code)
+	runtime := getVM()
+	defer returnVM(runtime)
+
+	if SystemParameters.ScopedJavascriptRuntimes {
+		code = fmt.Sprintf("(function(){%s})()", code)
+	}
+	script, err := runtime.Compile("", code)
 	if nil != err {
 		Log(WARN, ctx, "core.compileJavascript", "code", code, "error", err)
 		return nil, NewSyntaxError(err.Error())
@@ -517,7 +523,13 @@ func RunJavascript(ctx *Context, bs *Bindings, props map[string]interface{}, src
 	env := make(map[string]interface{})
 	envBindings := make(map[string]interface{})
 
-	runtime := otto.New()
+	// if we're using reusable scoped runtimes and we're given uncompiled code, it needs to be wrapped
+	if srcString, ok := src.(string); ok && SystemParameters.ScopedJavascriptRuntimes {
+		src = fmt.Sprintf("(function(){%s})()", srcString)
+	}
+
+	runtime := getVM()
+	defer returnVM(runtime)
 
 	if ctx != nil && ctx.App != nil {
 		if err := ctx.App.UpdateJavascriptRuntime(ctx, runtime); err != nil {
@@ -535,6 +547,16 @@ func RunJavascript(ctx *Context, bs *Bindings, props map[string]interface{}, src
 			}
 			envBindings[k] = v
 		}
+	}
+
+	// if we're reusing runtimes, give a halfhearted attempt to clean up the stuff we can.
+	// notably, this does not include variables or global state changes created by code blocks
+	if SystemParameters.ScopedJavascriptRuntimes && bs != nil {
+		defer func() {
+			for k := range *bs {
+				_ = runtime.Set(k, otto.UndefinedValue())
+			}
+		}()
 	}
 
 	env["bindings"] = envBindings
@@ -732,23 +754,6 @@ func RunJavascript(ctx *Context, bs *Bindings, props map[string]interface{}, src
 		return call.Argument(0)
 	}
 
-	// // One way to extend the bindings.
-	// // Another way is just to return a map (object).
-	// env["bind"] = func(call otto.FunctionCall) otto.Value {
-	// 	Log(DEBUG, ctx, "core.RunJavascript", "f", "bind")
-	// 	variable, err := call.Argument(0).ToString()
-	// 	// Don't know how to throw an exception.
-	// 	if err != nil {
-	// 		throwJavascript(call.Otto.Call("new Error", nil, err.Error()))
-	// 	}
-	// 	val, err := call.Argument(1).Export()
-	// 	if err != nil {
-	// 		throwJavascript(call.Otto.Call("new Error", nil, err.Error()))
-	// 	}
-	// 	moreBindings["?" + variable] = val
-	// 	return call.Argument(0)
-	// }
-
 	// HTTP anything
 	// method, url, body
 	env["http"] = jsFun_http(ctx, runtime, env)
@@ -795,43 +800,6 @@ func RunJavascript(ctx *Context, bs *Bindings, props map[string]interface{}, src
 		}
 		return result
 	}
-
-	// Exposed RunJavascript as a System-level API.
-	//
-	// // This function is just for development.  For example, when
-	// // called via '/api/loc/util/js'.  Used in 'examples/action.sh'.
-	// env["require"] = func(call otto.FunctionCall) otto.Value {
-	// 	Log(DEBUG, ctx, "core.RunJavascript", "f", "require", "call", call)
-	// 	library, err := call.Argument(1).ToString()
-	// 	if err != nil {
-	// 		Log(WARN, ctx, "core.RunJavascript", "f", "0.Export", "warning", err)
-	// 		throwJavascript(call.Otto.Call("new Error", nil, err.Error()))
-	// 	}
-	// 	Log(DEBUG, ctx, "core.RunJavascript", "f", "require", "library", library)
-
-	// 	uri := library
-	// 	if ctx.GetLoc() != nil {
-	// 		uri, err = ctx.GetLoc().ResolveService(ctx, library)
-	// 		if err != nil {
-	// 			Log(WARN, ctx, "core.RunJavascript", "f", "require", "warning", err)
-	// 			throwJavascript(call.Otto.Call("new Error", nil, err.Error()))
-	// 		}
-	// 	}
-
-	// 	code, err := CachedSlurp(ctx, uri)
-	// 	if err != nil {
-	// 		Log(WARN, ctx, "core.RunJavascript", "f", "require", "warning", err)
-	// 		throwJavascript(call.Otto.Call("new Error", nil, err.Error()))
-	// 	}
-
-	// 	result, err := runtime.Run(code)
-	// 	if err != nil {
-	// 		Log(WARN, ctx, "core.RunJavascript", "f", "ToValue", "error", err)
-	// 		throwJavascript(call.Otto.Call("new Error", nil, err.Error()))
-	// 	}
-
-	// 	return result
-	// }
 
 	if ctx != nil {
 		LocationFunctions(ctx, ctx.GetLoc(), runtime, env)
