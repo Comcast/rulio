@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"sync"
 	"testing"
 	"time"
 
@@ -45,7 +46,14 @@ func testHTTPRequest(t *testing.T, url string, shouldPass bool) {
 }
 
 func TestHTTPRequestBasic(t *testing.T) {
-	testHTTPRequest(t, "http://www.google.com", true)
+	wg := sync.WaitGroup{}
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		wg.Done()
+	}))
+	defer server.Close()
+	wg.Add(1)
+	testHTTPRequest(t, server.URL, true)
+	wg.Wait()
 }
 
 func TestHTTPRequestBadURL(t *testing.T) {
