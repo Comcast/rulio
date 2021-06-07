@@ -25,6 +25,7 @@ import (
 	"net/http/httptest"
 	"reflect"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 )
@@ -534,7 +535,23 @@ func TestRuleWithUnboundVar(t *testing.T) {
 	defer server.Close()
 
 	url := server.URL
-	fmt.Printf("url %s", url)
+	fmt.Printf("url %s\n", url)
+
+	// waitgroup the asserting goroutine
+	// the channel needs to be listened on, but we need the main goroutine to block until this assertion goroutine runs
+	wg := sync.WaitGroup{}
+	wg.Add(1)
+	go func() {
+		select {
+		case problem := <-handled:
+			if problem != nil {
+				t.Fatal(problem)
+			}
+		case <-time.After(5*time.Second):
+			// Victory
+		}
+		wg.Done()
+	}()
 
 	err := RuleTest(TestContext("TestRuleWithUnboundVar"),
 		"TestRuleWithUnboundVar1",
@@ -549,20 +566,6 @@ func TestRuleWithUnboundVar(t *testing.T) {
 
     "condition": {
         "or": [
-            {
-                "and": [
-                    {
-                        "pattern": {
-                            "event": "zone",
-                            "time": "?time",
-                            "instanceName": "?instanceName"
-                        }
-                    },
-                    {
-                        "code": "0 < time"
-                    }
-                ]
-            },
             {
                 "code": "true"
             }
@@ -597,15 +600,7 @@ func TestRuleWithUnboundVar(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	timer := time.NewTicker(5 * time.Second).C
-	select {
-	case problem := <-handled:
-		if problem != nil {
-			t.Fatal(problem)
-		}
-	case <-timer:
-		// Victory
-	}
+	wg.Wait()
 }
 
 func TestRuleEventCopy(t *testing.T) {
