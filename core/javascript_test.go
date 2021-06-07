@@ -24,26 +24,6 @@ import (
 	"testing"
 )
 
-//TODO(racampbe): don't commit this. use it as a code playground
-func TestDeleteme(t *testing.T) {
-	bs := make(Bindings)
-	bs["x"] = 2
-	SystemParameters.ScopedJavascriptRuntimes = true
-	_, err := RunJavascript(nil, &bs, nil, "x=x+1; if (x!=3) { Env.log('x is not 3: ' + x) }")
-	if err != nil {
-		t.Error(err)
-	}
-
-	_, err = RunJavascript(nil, &bs, nil, "x=x+1; if (x!=3) { Env.log('x is not 3: ' + x) }")
-	if err != nil {
-		t.Error(err)
-	}
-
-	_, err = RunJavascript(nil, &bs, nil, "x=x+1; if (x!=3) { Env.log('x is not 3: ' + x) }")
-	if err != nil {
-		t.Error(err)
-	}
-}
 
 // tests the 'out' javascript callable
 func TestJavascriptCommunication(t *testing.T) {
