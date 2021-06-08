@@ -39,6 +39,7 @@ type State interface {
 	get(ctx *Context, id string, getLock bool) (Map, error)
 	Search(ctx *Context, pattern Map) (*SearchResults, error)
 	FindRules(ctx *Context, event Map) (map[string]Map, error)
+	FindCachedRules(ctx *Context, event Map) (map[string]*Rule, error)
 	Clear(ctx *Context) error
 }
 

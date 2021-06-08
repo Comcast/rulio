@@ -22,6 +22,7 @@ import (
 	"log"
 	"net/http"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
@@ -29,7 +30,7 @@ import (
 )
 
 func TestHTTP(t *testing.T) {
-	port := "localhost:9999" // Sorry.
+	port := "localhost:0" // randomize the port
 
 	sys, ctx := sys.ExampleSystem("Test")
 	service := &Service{
@@ -68,7 +69,7 @@ func TestHTTP(t *testing.T) {
 		}
 		buf := bytes.NewBufferString(body)
 
-		resp, err := http.Post("http://"+port+"/"+uri, "application/json", buf)
+		resp, err := http.Post("http://"+server.listener.Addr().String()+"/"+uri, "application/json", buf)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -147,10 +148,13 @@ rule:
 		t.Fatalf("unexpected '%s'", got)
 	}
 
-	defer func() {
-		serviceRequest(map[string]interface{}{
-			"uri": "/api/sys/admin/shutdown",
-		})
-		log.Printf("stopping")
-	}()
+	wg := sync.WaitGroup{}
+	wg.Add(1)
+	serviceRequest(map[string]interface{}{
+		"uri": "/api/sys/admin/shutdown",
+	})
+	serviceExiter = func(code int) {
+		wg.Done()
+	}
+	wg.Wait()
 }

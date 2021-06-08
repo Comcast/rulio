@@ -539,7 +539,9 @@ func RunJavascript(ctx *Context, bs *Bindings, props map[string]interface{}, src
 
 	if bs != nil {
 		for k, v := range *bs {
-			Log(DEBUG, ctx, "core.RunJavascript", "var", k, "val", Gorep(v), "type", fmt.Sprintf("%T", v))
+			if loggable(ctx, DEBUG) {
+				Log(DEBUG, ctx, "core.RunJavascript", "var", k, "val", Gorep(v), "type", fmt.Sprintf("%T", v))
+			}
 			if err := runtime.Set(k, v); err != nil {
 				Log(WARN, ctx, "core.RunJavascript", "var", k, "val", Gorep(v), "when", "Set",
 					"error", err)
@@ -885,13 +887,23 @@ func RunJavascript(ctx *Context, bs *Bindings, props map[string]interface{}, src
 				panic(caught) // Something else happened, so repanic!
 			}
 		}()
-
+		watchdogCleanup := make(chan bool)
 		runtime.Interrupt = make(chan func(), 1) // No blocking
+
+		defer func() {
+			watchdogCleanup<-true
+			close(watchdogCleanup)
+		}()
+
 		go func() {
-			time.Sleep(timeout)
-			runtime.Interrupt <- func() {
-				panic(Halt)
+			select {
+			case <-time.After(timeout):
+				runtime.Interrupt <- func() {
+					panic(Halt)
+				}
+			case <-watchdogCleanup:
 			}
+			close(runtime.Interrupt)
 		}()
 	}
 

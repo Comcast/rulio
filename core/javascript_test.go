@@ -230,6 +230,11 @@ func BenchmarkJavascriptNoOp(b *testing.B) {
 			b.Errorf("Error %v", err)
 		}
 	}
+	// uncomment for a noisier benchmark, but gives greater insight to leaks
+	//mem := runtime.MemStats{}
+	//runtime.ReadMemStats(&mem)
+	//fmt.Printf("current goroutines: %d\n", runtime.NumGoroutine())
+	//fmt.Printf("memory statistics: %+v\n", mem)
 }
 
 func BenchmarkJavascriptLoop(b *testing.B) {

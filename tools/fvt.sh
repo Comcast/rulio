@@ -210,9 +210,12 @@ curl -s --data-urlencode 'pattern={"likes":"?x"}' \
     "$ENDPOINT/api/loc/facts/search?location=$ACCOUNT" | tee $DIR/$N.txt | \
     grep -qF '"Found":[]' && pass || fail
 
-# Event processing time limit
-
-THEN=$(TZ=UTC date '+%FT%T.%NZ')
+# Event processing time limit.  Darwin doesn't support better than second resolution in `date`
+if [ "$(uname)" == 'Darwin' ]; then
+  THEN=$(TZ=UTC date '+%FT%T.000Z')
+else
+  THEN=$(TZ=UTC date '+%FT%T.%NZ')
+fi
 
 echo "# $N       Event time limit: Add a rule"
 cat <<EOF | curl -s -d "@-" "$ENDPOINT/api/loc/rules/add" | tee $DIR/$N.txt | grep -q '"id"' && pass || fail
