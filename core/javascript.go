@@ -903,7 +903,6 @@ func RunJavascript(ctx *Context, bs *Bindings, props map[string]interface{}, src
 				}
 			case <-watchdogCleanup:
 			}
-			close(runtime.Interrupt)
 		}()
 	}
 
