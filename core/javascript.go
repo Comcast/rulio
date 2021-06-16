@@ -128,7 +128,7 @@ func CompileJavascript(ctx *Context, loc *Location, libraries []string, code str
 	defer returnVM(runtime)
 
 	if SystemParameters.ScopedJavascriptRuntimes {
-		code = fmt.Sprintf("(function(){%s})()", code)
+		code = fmt.Sprintf(`(function(){return eval('%s')})()`, strings.ReplaceAll(code, "'", `\'`))
 	}
 	script, err := runtime.Compile("", code)
 	if nil != err {
@@ -525,7 +525,7 @@ func RunJavascript(ctx *Context, bs *Bindings, props map[string]interface{}, src
 
 	// if we're using reusable scoped runtimes and we're given uncompiled code, it needs to be wrapped
 	if srcString, ok := src.(string); ok && SystemParameters.ScopedJavascriptRuntimes {
-		src = fmt.Sprintf("(function(){%s})()", srcString)
+		src = fmt.Sprintf(`(function(){return eval('%s')})()`, strings.ReplaceAll(srcString, "'", `\'`))
 	}
 
 	runtime := getVM()

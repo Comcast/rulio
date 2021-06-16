@@ -62,17 +62,8 @@ func TestRunJavascriptRunoffResult(t *testing.T) {
 	bs["x"] = 2
 	SystemParameters.ScopedJavascriptRuntimes = true
 
-	// reused/scoped runtimes no longer implicitly return a value
+	// reused/scoped runtimes should still implicitly return a value
 	val, err := RunJavascript(ctx, &bs,  nil, `x + 2`)
-	if err != nil {
-		t.Error(err)
-	}
-	if val != nil {
-		t.Errorf("expected nil result, got: %#v", val)
-	}
-
-	// explicitly returned values will regain previous behavior
-	val, err = RunJavascript(ctx, &bs,  nil, `return x + 2`)
 	if err != nil {
 		t.Error(err)
 	}
@@ -84,7 +75,6 @@ func TestRunJavascriptRunoffResult(t *testing.T) {
 	} else {
 		t.Errorf("expected return value to be a float, got: %#v", val)
 	}
-
 
 	SystemParameters.ScopedJavascriptRuntimes = false
 	val, err = RunJavascript(ctx, &bs,  nil, `x + 2`)
