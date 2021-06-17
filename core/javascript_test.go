@@ -117,6 +117,45 @@ func TestJavascriptBindingMutation(t *testing.T) {
 	}
 }
 
+func TestJavascriptMultiline(t *testing.T) {
+	bs := make(Bindings)
+	var val *int
+	val = new(int)
+	*val = 2
+	bs["x"] = val
+	SystemParameters.ScopedJavascriptRuntimes = true
+	v, err := RunJavascript(nil, &bs, nil, `
+x=x+1
+x=x+1
+`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if *bs["x"].(*int) != 2 {
+		t.Errorf("Expected bindings not to be changed from javascript execution")
+	}
+	if v, ok := v.(float64); ok {
+		if v != 4 {
+			t.Errorf("expected 2+2=4, got: %f", v)
+		}
+	} else {
+		t.Errorf("expected return value to be a float, got: %#v", val)
+	}
+
+
+	SystemParameters.ScopedJavascriptRuntimes = false
+	_, err = RunJavascript(nil, &bs, nil, `
+x=x+1
+x=x+1
+`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if *bs["x"].(*int) != 2 {
+		t.Errorf("Expected bindings not to be changed from javascript execution")
+	}
+}
+
 // verify that state doesn't leak between executions
 //note the `var` declaration used.
 func TestJavascriptStateMutation(t *testing.T) {
