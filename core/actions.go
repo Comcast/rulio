@@ -527,7 +527,7 @@ func GetCode(x interface{}) (string, error) {
 	case []string:
 		var acc string
 		for _, s := range vv {
-			acc += s + "\n"
+			acc += s + ";"
 		}
 		return acc, nil
 
@@ -538,7 +538,7 @@ func GetCode(x interface{}) (string, error) {
 			if !ok {
 				return "", fmt.Errorf("bad code %#v (%T)", y, y)
 			}
-			acc += s + "\n"
+			acc += s + ";"
 		}
 		return acc, nil
 
