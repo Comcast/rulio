@@ -18,9 +18,11 @@ package core
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -444,6 +446,9 @@ func (loc *Location) SearchRemoteFacts(ctx *Context, target string, pattern Map)
 }
 
 func (loc *Location) SearchLocations(ctx *Context, locations []string, pattern map[string]interface{}) (*SearchResults, error) {
+	if ctx.Context.Err() != nil {
+		return nil, ctx.Context.Err()
+	}
 	Log(INFO, ctx, "Location.SearchLocation", "locations", locations, "pattern", pattern)
 
 	if len(locations) == 0 {
@@ -495,34 +500,78 @@ func ExtendBindings(ctx *Context, x *Bindings, y *Bindings) *Bindings {
 func (p PatternQuery) Exec(ctx *Context, loc *Location, qc QueryContext, qr QueryResult) (*QueryResult, error) {
 	Log(DEBUG, ctx, "PatternQuery.Exec", "locations", p.Locations, "pattern", p.Pattern, "qr", qr)
 	acc := QueryResult{make([]Bindings, 0, 0), qr.Checked, qr.Elapsed}
+
+	errs := make(chan error, len(qr.Bss))
+	exts := make(chan Bindings)
+
+	origContext := ctx.Context
+	defer func() {
+		ctx.Context = origContext
+	}()
+	var cancel func()
+	if ctx.Context == nil {
+		ctx.Context = context.Background()
+	}
+	ctx.Context, cancel = context.WithCancel(ctx.Context)
+	defer cancel()
+
+	wg := sync.WaitGroup{}
+
 	// ToDo: Add to elapsed in QueryResult
 	for _, bs := range qr.Bss {
-		bound := bs.Bind(ctx, interface{}(p.Pattern))
-
-		// qc.locations are from the triggering event
-		// locations for PatternQuery are used to get multiple bindgings for each location
-		locations := p.Locations
-		if len(locations) == 0 {
-			locations = qc.Locations
-		}
-
-		m, ok := bound.(map[string]interface{})
-		if !ok {
-			return nil, fmt.Errorf("%#v isn't a map[string]interface{}", bound)
-		}
-		srs, err := loc.SearchLocations(ctx, locations, m)
-		if err != nil {
-			return nil, err
-		}
-
-		// create bindings for each location
-		for _, sr := range srs.Found {
-			for _, more := range sr.Bindingss {
-				extended := ExtendBindings(ctx, &bs, &more)
-				acc.Bss = append(acc.Bss, *extended)
+		bindings := bs // pin to prevent pointer from changing in the goroutine
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			bound := bindings.Bind(ctx, interface{}(p.Pattern))
+			// qc.locations are from the triggering event
+			// locations for PatternQuery are used to get multiple bindings for each location
+			locations := p.Locations
+			if len(locations) == 0 {
+				locations = qc.Locations
 			}
-		}
+
+			m, ok := bound.(map[string]interface{})
+			if !ok {
+				errs <- fmt.Errorf("%#v isn't a map[string]interface{}", bound)
+				cancel()
+				return
+			}
+			srs, err := loc.SearchLocations(ctx, locations, m)
+			if err != nil {
+				errs <- err
+				cancel()
+				return
+			}
+
+			// create bindings for each location
+			for _, sr := range srs.Found {
+				for _, more := range sr.Bindingss {
+					extended := ExtendBindings(ctx, &bindings, &more)
+					exts <- *extended
+				}
+			}
+		}()
 	}
+	// consume from the channel in a goroutine, we can't buffer them perfectly
+	wg2 := sync.WaitGroup{}
+	wg2.Add(1)
+	go func() {
+		for ext := range exts {
+			acc.Bss = append(acc.Bss, ext)
+		}
+		wg2.Done()
+	}()
+	wg.Wait()
+
+	close(errs)
+	close(exts)
+
+	for err := range errs {
+		return nil, err
+	}
+
+	wg2.Wait()
 	Log(DEBUG, ctx, "PatternQuery.Exec", "results", acc)
 	return &acc, nil
 }
